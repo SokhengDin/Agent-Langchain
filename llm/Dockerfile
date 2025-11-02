@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     libpq-dev \
     libffi-dev \
-    libgdk-pixbuf2.0-dev \
+    libgdk-pixbuf-xlib-2.0-dev \
     shared-mime-info \
     libgirepository1.0-dev \
     libgl1-mesa-dev \
