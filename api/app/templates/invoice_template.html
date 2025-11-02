@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Booking Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 2px solid #ddd;
+            padding-bottom: 20px;
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0066cc;
+        }
+        .invoice-details {
+            text-align: right;
+        }
+        .invoice-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .invoice-date {
+            margin-bottom: 10px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            color: #0066cc;
+        }
+        .customer-info, .booking-info {
+            margin-bottom: 20px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .info-label {
+            width: 150px;
+            font-weight: bold;
+        }
+        .info-value {
+            flex: 1;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .total-row {
+            font-weight: bold;
+        }
+        .payment-section {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+        .payment-info {
+            flex: 1;
+        }
+        .qr-code {
+            text-align: center;
+            margin-left: 20px;
+        }
+        .qr-code img {
+            max-width: 150px;
+            max-height: 150px;
+        }
+        .footer {
+            margin-top: 40px;
+            text-align: center;
+            font-size: 12px;
+            color: #777;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .note {
+            font-style: italic;
+            margin-top: 20px;
+        }
+        @page {
+            margin: 1cm;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">{{ booking.hotel_name }}</div>
+            <div class="invoice-details">
+                <div class="invoice-number">Invoice #{{ invoice_number }}</div>
+                <div class="invoice-date">Date: {{ invoice_date }}</div>
+                <div>Booking ID: {{ booking.booking_id }}</div>
+            </div>
+        </div>
+        
+        <div class="section-title">Guest Information</div>
+        <div class="customer-info">
+            <div class="info-row">
+                <div class="info-label">Name:</div>
+                <div class="info-value">{{ booking.guest_name }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Email:</div>
+                <div class="info-value">{{ booking.guest_email }}</div>
+            </div>
+        </div>
+        
+        <div class="section-title">Booking Details</div>
+        <div class="booking-info">
+            <div class="info-row">
+                <div class="info-label">Hotel:</div>
+                <div class="info-value">{{ booking.hotel_name }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Address:</div>
+                <div class="info-value">{{ booking.hotel_address }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Room:</div>
+                <div class="info-value">{{ booking.room_number }} ({{ booking.room_type }})</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Check-in Date:</div>
+                <div class="info-value">{{ booking.check_in_date }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Check-out Date:</div>
+                <div class="info-value">{{ booking.check_out_date }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Number of Nights:</div>
+                <div class="info-value">{{ booking.stay_duration }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Number of Guests:</div>
+                <div class="info-value">{{ booking.num_guests }}</div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Special Requests:</div>
+                <div class="info-value">{{ booking.special_requests }}</div>
+            </div>
+        </div>
+        
+        <div class="section-title">Charge Summary</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Nights</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{ booking.room_type }} (Room {{ booking.room_number }})</td>
+                    <td>{{ booking.stay_duration }}</td>
+                    <td>${{ "%.2f"|format(booking.price_per_night) }}</td>
+                    <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                </tr>
+                <!-- You can add additional charges here if needed -->
+                <tr class="total-row">
+                    <td colspan="3">Total Amount</td>
+                    <td>${{ "%.2f"|format(booking.total_price) }}</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="payment-section">
+            <div class="payment-info">
+                <div class="section-title">Payment Information</div>
+                <p>Status: {{ booking.booking_status }}</p>
+                <p>To complete your payment, please scan the QR code or visit:</p>
+                <p><a href="{{ payment_url }}">{{ payment_url }}</a></p>
+                <p class="note">Payment is due within 24 hours of booking to confirm your reservation.</p>
+            </div>
+            <div class="qr-code">
+                <img src="{{ qr_code }}" alt="Payment QR Code">
+                <p>Scan to Pay</p>
+            </div>
+        </div>
+        
+    </div>
+</body>
+</html>

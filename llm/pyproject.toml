@@ -1,0 +1,24 @@
+[project]
+name = "llm"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.120.4",
+    "ipython>=9.6.0",
+    "langchain>=1.0.3",
+    "langchain-chroma",
+    "langchain-community>=0.4.1",
+    "langchain-huggingface>=1.0.0",
+    "langchain-ollama>=1.0.0",
+    "langchain-openai>=1.0.1",
+    "langgraph>=1.0.2",
+    "loguru>=0.7.3",
+    "pydantic>=2.12.3",
+    "pydantic-core>=2.41.4",
+    "pydantic-settings>=2.11.0",
+    "python-decouple>=3.8",
+    "sentence-transformers>=5.1.2",
+    "uvicorn>=0.38.0",
+]

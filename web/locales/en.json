@@ -1,0 +1,59 @@
+{
+  "chat": {
+    "title": "AI Assistant",
+    "subtitle": "How can I help you today?",
+    "greeting": "Hello! How can I help you?",
+    "placeholder": "Type your message...",
+    "send": "Send",
+    "typing": "AI is typing...",
+    "newMessages": "New messages",
+    "scrollToBottom": "Scroll to bottom",
+    "attach": "Attach file",
+    "emoji": "Add emoji",
+    "keyboardShortcut": "Press Enter to send, Shift+Enter for new line",
+    "characterCount": "characters",
+    "processing": "Processing...",
+    "error": "Sorry, something went wrong. Please try again.",
+    "retry": "Retry",
+    "clear": "Clear chat",
+    "export": "Export chat"
+  },
+  "common": {
+    "language": "Language",
+    "english": "English",
+    "khmer": "ខ្មែរ",
+    "settings": "Settings",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "loading": "Loading...",
+    "success": "Success",
+    "error": "Error"
+    },
+  "welcome": {
+    "title": "Welcome to AMS AI Assistant",
+    "subtitle": "Department of Applied Mathematics and Statistics",
+    "visitDepartment": "Visit AMS Department →",
+    "feature1": "AI-Powered Chat",
+    "feature1Desc": "Get instant help with your questions",
+    "feature2": "Multilingual Support",
+    "feature2Desc": "Available in English and Khmer",
+    "feature3": "Academic Excellence",
+    "feature3Desc": "Developed by AMS research students",
+    "getStarted": "Get Started",
+    "note": "This AI assistant is designed to help students and researchers with academic inquiries."
+  },
+  "notFound": {
+    "title": "Page Not Found",
+    "description": "The page you're looking for doesn't exist or has been moved. Let's get you back to chatting!",
+    "suggestion1": "Try the chat interface",
+    "suggestion2": "Return to homepage",
+    "backToChat": "Back to Chat",
+    "goBack": "Go Back",
+    "funMessage": "Lost in cyberspace? Our AI can help you find your way!"
+  },
+  "footer": {
+    "developedBy": "Developed By Research Student at Department AMS"
+  }
+} 
