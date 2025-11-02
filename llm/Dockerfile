@@ -1,31 +1,30 @@
-FROM python:3.12-alpine
+FROM python:3.12-slim
 
 WORKDIR /app
 
 # Install build dependencies and runtime libraries
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
-    musl-dev \
-    postgresql-dev \
+    libpq-dev \
     libffi-dev \
-    gdk-pixbuf-dev \
+    libgdk-pixbuf2.0-dev \
     shared-mime-info \
-    gobject-introspection-dev \
-    mesa-dev \
-    geos-dev \
+    libgirepository1.0-dev \
+    libgl1-mesa-dev \
+    libgeos-dev \
     curl \
-    && rm -rf /var/cache/apk/*
+ && rm -rf /var/lib/apt/lists/*
 
-# Install uv
+# Install uv (Python package manager)
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
 
-# Copy dependency files
-COPY pyproject.toml ./
-COPY README.md ./
+COPY pyproject.toml README.md ./
 
-# Install Python dependencies
+RUN uv pip install --system --no-cache torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1
+
+# Install all project dependencies
 RUN uv pip install --system --no-cache .
 
 # Copy application code
