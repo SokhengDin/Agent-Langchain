@@ -139,3 +139,9 @@ celerybeat.pid
 generate_jwt.py
 
 app/tests/
+
+
+/uploads/
+./uploads
+./uploads/
+./uploads/**
