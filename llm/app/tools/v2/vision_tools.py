@@ -67,7 +67,7 @@ class VisionTools:
 
             vision_model = ChatOllama(
                 base_url    = settings.OLLAMA_BASE_URL
-                , model     = "llama3.2-vision:11b"
+                , model     = "gemma3:4b"
                 , temperature = 0.0
             )
 
@@ -130,7 +130,7 @@ class VisionTools:
 
             vision_model = ChatOllama(
                 base_url    = settings.OLLAMA_BASE_URL
-                , model     = "llama3.2-vision:11b"
+                , model     = "gemma3:4b"
                 , temperature = 0.0
             )
 
@@ -201,7 +201,7 @@ Format the response as a clear, structured list."""
 
             vision_model = ChatOllama(
                 base_url    = settings.OLLAMA_BASE_URL
-                , model     = "llama3.2-vision:11b"
+                , model     = "gemma3:4b"
                 , temperature = 0.0
             )
 

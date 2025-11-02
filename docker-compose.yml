@@ -10,7 +10,7 @@ services:
     ports:
       - "5437:5432"
     volumes:
-      - database_vol:/var/lib/postgresql/data
+      - database_agent_volume:/var/lib/postgresql/data
     networks:
       - alpha_network
 
@@ -18,17 +18,17 @@ services:
     build: 
       context: ./api
       dockerfile: Dockerfile 
+    container_name: hotel_agent_api
     depends_on:
       - db
     restart: unless-stopped
     environment:
-      - DB_USER=agent_user
-      - DB_NAME=hotel_db
-      - DB_PASS=agent_pwd
-      - DB_HOST=db
-      - DB_PORT=5432
-    ports:
-      - "8000:8000"
+      - DB_USER=${DB_USER}
+      - DB_NAME=${DB_NAME}
+      - DB_PASS=${DB_PASS}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     volumes:
       - ./api:/app
     networks:
@@ -38,11 +38,12 @@ services:
     build: 
       context: ./llm
       dockerfile: Dockerfile 
+    container_name: hotel_agent_llm
     depends_on:
       - api
     restart: unless-stopped
     environment:
-      - API_BASE_URL=https://hotel-agent.redalab.org
+      - API_BASE_URL=http://hotel_agent_api:8000
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - NVIDIA_NIM_API_KEY=${NVIDIA_NIM_API_KEY}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
@@ -63,17 +64,14 @@ services:
       - llm
     restart: unless-stopped
     environment:
-      - API_URL=https://hotel-api.sokhengdin.dev
-      - LLM_URL=https://hotel-llm.sokhengdin.dev
+      - NEXT_PUBLIC_API_URL=http://hotel_agent_api:8000
+      - NEXT_PUBLIC_LLM_API_URL=http://hotel_agent_llm:8005
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_URL=https://hotel-llm.sokhengdin.dev/api/v1
-    ports:
-      - "3000:3000"
     networks:
       - alpha_network
 
 volumes:
-  database_vol:
+  database_agent_volume:
 
 networks:
   alpha_network:

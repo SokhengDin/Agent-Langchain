@@ -9,6 +9,7 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import AgentStatus from './AgentStatus';
 import ThinkingIndicator from './ThinkingIndicator';
+import { FileText, Image as ImageIcon } from 'lucide-react';
 
 function MessageBubble({ message }) {
     const [mounted, setMounted] = useState(false);
@@ -55,6 +56,29 @@ function MessageBubble({ message }) {
                         : "bg-muted/80"
                 )}>
                     <CardContent className="p-3">
+                        {/* Show attachments if present */}
+                        {message.attachments && message.attachments.length > 0 && (
+                            <div className="mb-2 space-y-2">
+                                {message.attachments.map((att, idx) => (
+                                    <div key={idx} className={cn(
+                                        "flex items-center gap-2 p-2 rounded-md",
+                                        isUser ? "bg-primary-foreground/10" : "bg-background/50"
+                                    )}>
+                                        {att.type.startsWith('image/') ? (
+                                            <>
+                                                <ImageIcon className="h-4 w-4 flex-shrink-0" />
+                                                <span className="text-xs truncate">{att.name}</span>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <FileText className="h-4 w-4 flex-shrink-0" />
+                                                <span className="text-xs truncate">{att.name}</span>
+                                            </>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                         {isUser ? (
                             <p className='text-sm whitespace-pre-wrap leading-relaxed m-0'>{message.content}</p>
                         ) : (

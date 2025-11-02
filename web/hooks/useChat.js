@@ -37,12 +37,25 @@ export function useChat() {
         });
     }, [t]);
 
-    const sendMessage = async (content) => {
+    const sendMessage = async (content, attachments = []) => {
+        // Format message with attachments if present
+        let messageContent = content;
+        if (attachments.length > 0) {
+            attachments.forEach(att => {
+                if (att.type.startsWith('image/')) {
+                    messageContent += `\n\nImage: ${att.path}`;
+                } else if (att.type === 'application/pdf') {
+                    messageContent += `\n\nPDF: ${att.path}`;
+                }
+            });
+        }
+
         const userMessage = {
             id: Date.now(),
-            content,
+            content: messageContent,
             sender: 'user',
             timestamp: new Date().toISOString(),
+            attachments: attachments.length > 0 ? attachments : undefined,
         };
         setMessages(prev => [...prev, userMessage]);
 
@@ -60,16 +73,30 @@ export function useChat() {
                 throw new ApiError('Please login to continue chatting.', 401, null);
             }
 
+            // Prepare request body with attachments
+            const requestBody = {
+                message: messageContent,
+                thread_id: threadId,
+            };
+
+            // Add file paths if attachments exist
+            if (attachments.length > 0) {
+                attachments.forEach(att => {
+                    if (att.type.startsWith('image/')) {
+                        requestBody.image_path = att.path;
+                    } else if (att.type === 'application/pdf') {
+                        requestBody.pdf_path = att.path;
+                    }
+                });
+            }
+
             const response = await fetch('/api/v2/chat/stream', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
                 },
-                body: JSON.stringify({
-                    message: content,
-                    thread_id: threadId,
-                }),
+                body: JSON.stringify(requestBody),
             });
 
             if (!response.ok) {

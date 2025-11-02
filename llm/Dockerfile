@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -7,27 +7,29 @@ RUN apt-get update && \
         gcc \
         g++ \
         libpq-dev \
-        patch \
         libc6-dev \
         linux-libc-dev \
         libffi-dev \
-        libcairo2-dev \
-        libpango1.0-dev \
         libgdk-pixbuf-xlib-2.0-dev \
         shared-mime-info \
         libgirepository1.0-dev \
         libgl1-mesa-dev \
         libgomp1 \
-        libgeos-dev && \
+        libgeos-dev \
+        curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
-RUN pip install aiohttp python-multipart
+RUN curl -LsSf https://astral.sh/uv/install.sh | sh
+ENV PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
+
+COPY pyproject.toml ./
+COPY README.md ./
+
+RUN uv sync --locked
 
 COPY . .
 
 EXPOSE 8005
 
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8005"]
+CMD ["fastapi", "run", "main.py", "--port", "8005", "--proxy-headers"]

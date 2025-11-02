@@ -1,23 +1,103 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Send, Paperclip, Smile } from 'lucide-react';
+import { Send, Paperclip, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import AttachmentPreview from '@/components/AttachmentPreview';
 
 export default function ChatInput({ onSendMessage, disabled }) {
     const { t } = useLanguage();
     const [message, setMessage] = useState('');
     const [isFocused, setIsFocused] = useState(false);
+    const [attachments, setAttachments] = useState([]);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (message.trim() && !disabled) {
-            onSendMessage(message);
+        if ((message.trim() || attachments.length > 0) && !disabled && !isUploading) {
+            onSendMessage(message, attachments);
             setMessage('');
+            setAttachments([]);
         }
+    };
+
+    const handleFileSelect = async (e) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        setIsUploading(true);
+
+        try {
+            const uploadPromises = files.map(async (file) => {
+                // Validate file type
+                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+                if (!allowedTypes.includes(file.type)) {
+                    throw new Error(`Invalid file type: ${file.type}. Only images and PDFs are allowed.`);
+                }
+
+                // Create preview for images
+                let preview = null;
+                if (file.type.startsWith('image/')) {
+                    preview = URL.createObjectURL(file);
+                }
+
+                // Upload file to server using v2 endpoint
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch('/api/v2/upload/file', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Upload failed');
+                }
+
+                const result = await response.json();
+
+                return {
+                    name: file.name,
+                    type: file.type,
+                    size: file.size,
+                    path: result.data.path,
+                    preview,
+                };
+            });
+
+            const uploadedFiles = await Promise.all(uploadPromises);
+            setAttachments(prev => [...prev, ...uploadedFiles]);
+
+        } catch (error) {
+            console.error('File upload error:', error);
+            alert(error.message || 'Failed to upload file. Please try again.');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) {
+                fileInputRef.current.value = '';
+            }
+        }
+    };
+
+    const handleRemoveAttachment = (index) => {
+        setAttachments(prev => {
+            const newAttachments = [...prev];
+            // Revoke preview URL if it exists
+            if (newAttachments[index].preview) {
+                URL.revokeObjectURL(newAttachments[index].preview);
+            }
+            newAttachments.splice(index, 1);
+            return newAttachments;
+        });
+    };
+
+    const handleAttachClick = () => {
+        fileInputRef.current?.click();
     };
 
     const handleKeyPress = (e) => {
@@ -28,20 +108,44 @@ export default function ChatInput({ onSendMessage, disabled }) {
     };
 
     const hasMessage = message.trim().length > 0;
+    const canSubmit = (hasMessage || attachments.length > 0) && !disabled && !isUploading;
 
     return (
         <div className="p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            {/* Hidden file input */}
+            <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                multiple
+                onChange={handleFileSelect}
+                className="hidden"
+            />
+
+            {/* Attachments Preview */}
+            {attachments.length > 0 && (
+                <div className="mb-3 flex flex-wrap gap-2">
+                    {attachments.map((file, index) => (
+                        <AttachmentPreview
+                            key={index}
+                            file={file}
+                            onRemove={() => handleRemoveAttachment(index)}
+                        />
+                    ))}
+                </div>
+            )}
+
             <form onSubmit={handleSubmit} className="flex items-end gap-3">
                 <div className="flex-1 relative group">
                     <div className={cn(
                         "relative rounded-xl border transition-all duration-300 ease-in-out",
                         "bg-background/50 backdrop-blur-sm",
-                        isFocused 
-                            ? "border-primary/50 shadow-lg shadow-primary/10 ring-2 ring-primary/20" 
+                        isFocused
+                            ? "border-primary/50 shadow-lg shadow-primary/10 ring-2 ring-primary/20"
                             : "border-border hover:border-border/80",
                         disabled && "opacity-50"
                     )}>
-                        <Input  
+                        <Input
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
                             onKeyPress={handleKeyPress}
@@ -56,33 +160,42 @@ export default function ChatInput({ onSendMessage, disabled }) {
                                 "resize-none transition-all duration-200"
                             )}
                         />
-                        
+
                         <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
                             <Button
                                 type="button"
                                 variant="ghost"
                                 size="sm"
+                                onClick={handleAttachClick}
                                 className={cn(
                                     "h-8 w-8 p-0 rounded-lg transition-all duration-200",
                                     "hover:bg-muted/80 hover:scale-105 active:scale-95",
-                                    "text-muted-foreground hover:text-foreground"
+                                    isUploading
+                                        ? "text-primary"
+                                        : attachments.length > 0
+                                            ? "text-primary"
+                                            : "text-muted-foreground hover:text-foreground"
                                 )}
-                                disabled={disabled}
+                                disabled={disabled || isUploading}
                             >
-                                <Paperclip className="h-4 w-4" />
+                                {isUploading ? (
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                    <Paperclip className="h-4 w-4" />
+                                )}
                             </Button>
-                        
+
                         </div>
                     </div>
                 </div>
-                
+
                 <Button
                     type="submit"
-                    disabled={disabled || !hasMessage}
+                    disabled={!canSubmit}
                     className={cn(
                         "h-[52px] w-[52px] p-0 rounded-xl transition-all duration-300 ease-in-out",
                         "relative overflow-hidden group",
-                        hasMessage && !disabled
+                        canSubmit
                             ? [
                                 "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25",
                                 "hover:shadow-xl hover:shadow-primary/30 hover:scale-105",
@@ -96,19 +209,19 @@ export default function ChatInput({ onSendMessage, disabled }) {
                 >
                     <div className={cn(
                         "transition-all duration-200",
-                        hasMessage && !disabled 
-                            ? "group-hover:rotate-12 group-active:rotate-0" 
+                        canSubmit
+                            ? "group-hover:rotate-12 group-active:rotate-0"
                             : ""
                     )}>
                         <Send className="h-5 w-5" />
                     </div>
-                    
-                    {hasMessage && !disabled && (
+
+                    {canSubmit && (
                         <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/10 to-primary/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                     )}
                 </Button>
             </form>
-            
+
             {message.length > 0 && (
                 <div className="flex justify-between items-center mt-2 px-1">
                     <div className="text-xs text-muted-foreground/60">

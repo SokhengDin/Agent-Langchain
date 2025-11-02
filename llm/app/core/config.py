@@ -15,10 +15,10 @@ class Settings(BaseSettings):
     NVIDIA_NIM_API_KEY  : str = config('NVIDIA_NIM_API_KEY' , cast=str)
 
 
-    LANGSMITH_TRACING       : str = config('LANGSMITH_TRACING', cast=str, default="true")
-    LANGSMITH_ENDPOINT      : str = config('LANGSMITH_ENDPOINT', cast=str, default="https://api.smith.langchain.com")
-    LANGSMITH_API_KEY       : str = config('LANGSMITH_API_KEY', cast=str)
-    LANGSMITH_PROJECT       : str = config('LANGSMITH_PROJECT', cast=str)
+    # LANGSMITH_TRACING       : str = config('LANGSMITH_TRACING', cast=str, default="true")
+    # LANGSMITH_ENDPOINT      : str = config('LANGSMITH_ENDPOINT', cast=str, default="https://api.smith.langchain.com")
+    # LANGSMITH_API_KEY       : str = config('LANGSMITH_API_KEY', cast=str)
+    # LANGSMITH_PROJECT       : str = config('LANGSMITH_PROJECT', cast=str)
 
     class Config:
         env_file    = ".env"
