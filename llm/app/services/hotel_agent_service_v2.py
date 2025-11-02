@@ -39,10 +39,10 @@ from app.core.config import settings
 from app import logger
 
 
-os.environ["LANGCHAIN_TRACING_V2"]  = settings.LANGSMITH_TRACING
-os.environ["LANGCHAIN_ENDPOINT"]    = settings.LANGSMITH_ENDPOINT
-os.environ["LANGCHAIN_API_KEY"]     = settings.LANGSMITH_API_KEY
-os.environ["LANGCHAIN_PROJECT"]     = settings.LANGSMITH_PROJECT
+# os.environ["LANGCHAIN_TRACING_V2"]  = settings.LANGSMITH_TRACING
+# os.environ["LANGCHAIN_ENDPOINT"]    = settings.LANGSMITH_ENDPOINT
+# os.environ["LANGCHAIN_API_KEY"]     = settings.LANGSMITH_API_KEY
+# os.environ["LANGCHAIN_PROJECT"]     = settings.LANGSMITH_PROJECT
 
 class HotelAgentServiceV2:
     """Hotel Agent Service using LangChain 1.0 create_agent with Ollama"""
