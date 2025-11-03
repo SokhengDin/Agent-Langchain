@@ -17,3 +17,4 @@ class DSAgentState(TypedDict):
     current_dataframe   : Optional[str]
 
     context             : Optional[Dict[str, Any]]
+    api_base_url        : Optional[str]

@@ -15,6 +15,7 @@ from app.tools.ds.viz_tools import VizTools
 from app.tools.ds.ml_tools import MLTools
 from app.tools.ds.rag_tools import DSRAGTools
 from app.tools.ds.vision_tools import DSVisionTools
+from app.tools.ds.theoretical_tools import TheoreticalTools
 
 from app.states.ds_agent_state import DSAgentState
 from app.services.ds_memory_service import DSMemoryService
@@ -80,12 +81,16 @@ class DSAgentService:
             , DSVisionTools.analyze_exercise_image
             , DSVisionTools.extract_math_equations
             , DSVisionTools.analyze_graph_chart
+
+            # Theoretical distribution tools
+            , TheoreticalTools.plot_normal_distribution
+            , TheoreticalTools.plot_distribution
         ]
 
         self.llm = ChatOllama(
             base_url    = settings.OLLAMA_BASE_URL
             , model     = "gpt-oss:20b"
-            , temperature= 0.0
+            , temperature= 0.3
             , num_ctx   = 16384
             , reasoning = True
             , streaming = True
@@ -132,6 +137,7 @@ class DSAgentService:
                 , "uploaded_files"  : []
                 , "current_dataframe": None
                 , "context"         : {}
+                , "api_base_url"    : settings.API_BASE_URL
             }
 
             result = await self.agent.ainvoke(
@@ -168,6 +174,7 @@ class DSAgentService:
                 , "uploaded_files"  : []
                 , "current_dataframe": None
                 , "context"         : {}
+                , "api_base_url"    : settings.API_BASE_URL
             }
 
             yield {

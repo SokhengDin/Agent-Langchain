@@ -10,6 +10,7 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import InjectedState
 
 from app import logger
+from app.core.config import settings
 
 class VizTools:
     """Tools for data visualization"""
@@ -55,12 +56,18 @@ class VizTools:
             plt.savefig(output_path, dpi=150, bbox_inches='tight')
             plt.close()
 
+            filename = Path(output_path).name
+            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+
             logger.info(f"Histogram saved: {output_path}")
 
             return {
                 "status"    : 200
                 , "message" : "Histogram created"
-                , "data"    : {"plot_path": output_path}
+                , "data"    : {
+                    "plot_path": output_path
+                    , "file_url": file_url
+                }
             }
 
         except Exception as e:
@@ -112,12 +119,19 @@ class VizTools:
             plt.savefig(output_path, dpi=150, bbox_inches='tight')
             plt.close()
 
+            filename = Path(output_path).name
+            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+
             logger.info(f"Scatter plot saved: {output_path}")
+            logger.debug(f"Scatter plot URL: {file_url}")
 
             return {
                 "status"    : 200
                 , "message" : "Scatter plot created"
-                , "data"    : {"plot_path": output_path}
+                , "data"    : {
+                    "plot_path": output_path
+                    , "file_url": file_url
+                }
             }
 
         except Exception as e:
@@ -126,6 +140,7 @@ class VizTools:
                 "status"    : 500
                 , "message" : f"Failed to create scatter plot: {str(e)}"
                 , "data"    : None
+                , "file_url": file_url
             }
 
     @staticmethod
@@ -170,12 +185,18 @@ class VizTools:
             plt.savefig(output_path, dpi=150, bbox_inches='tight')
             plt.close()
 
+            filename = Path(output_path).name
+            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+
             logger.info(f"Heatmap saved: {output_path}")
 
             return {
                 "status"    : 200
                 , "message" : "Heatmap created"
-                , "data"    : {"plot_path": output_path}
+                , "data"    : {
+                    "plot_path": output_path
+                    , "file_url": file_url
+                }
             }
 
         except Exception as e:
@@ -230,6 +251,9 @@ class VizTools:
             plt.savefig(output_path, dpi=150, bbox_inches='tight')
             plt.close()
 
+            filename = Path(output_path).name
+            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+
             logger.info(f"Box plot saved: {output_path}")
 
             return {
@@ -237,6 +261,7 @@ class VizTools:
                 , "message" : "Box plot created"
                 , "data"    : {
                     "plot_path": output_path
+                    , "file_url": file_url
                     , "outlier_count": len(outliers)
                     , "outlier_percentage": round(len(outliers) / len(data) * 100, 2)
                 }

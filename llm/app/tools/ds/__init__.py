@@ -4,6 +4,7 @@ from .viz_tools import VizTools
 from .ml_tools import MLTools
 from .rag_tools import DSRAGTools
 from .vision_tools import DSVisionTools
+from .theoretical_tools import TheoreticalTools
 
 __all__ = [
     "DataTools"
@@ -12,4 +13,5 @@ __all__ = [
     , "MLTools"
     , "DSRAGTools"
     , "DSVisionTools"
+    , "TheoreticalTools"
 ]

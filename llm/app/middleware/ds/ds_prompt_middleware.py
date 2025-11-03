@@ -49,6 +49,7 @@ def create_ds_dynamic_prompt(prompt_template: ChatPromptTemplate):
                 tools           = formatted_tools
                 , context       = request.state.get("context", {})
                 , recall_memories= recall_str
+                , api_base_url  = request.state.get("api_base_url", "http://localhost:8000")
             )
 
             if prompt_messages and len(prompt_messages) > 0:
