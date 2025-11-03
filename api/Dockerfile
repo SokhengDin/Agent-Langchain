@@ -6,14 +6,19 @@ WORKDIR /app
 RUN apk add --no-cache \
     gcc \
     g++ \
-    musl-dev \
-    postgresql-dev \
+    libpq-dev \
+    patch \
+    libc6-dev \
+    linux-libc-dev \
     libffi-dev \
-    gdk-pixbuf-dev \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libgdk-pixbuf-xlib-2.0-dev \
     shared-mime-info \
-    gobject-introspection-dev \
-    mesa-dev \
-    geos-dev \
+    libgirepository1.0-dev \
+    libgl1-mesa-dev \
+    libgomp1 \
+    libgeos-dev \
     curl \
     && rm -rf /var/cache/apk/*
 
