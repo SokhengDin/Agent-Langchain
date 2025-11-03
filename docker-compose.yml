@@ -63,6 +63,8 @@ services:
     depends_on:
       - api
       - llm
+    ports:
+      - "3000:3000"
     restart: unless-stopped
     environment:
       - NEXT_PUBLIC_API_URL=http://hotel_agent_api:8000
