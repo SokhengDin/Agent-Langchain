@@ -96,7 +96,10 @@ def notify_context_limit_middleware(
     non_system_msgs = [m for m in messages if not isinstance(m, SystemMessage)]
     estimated_tokens = estimate_tokens(messages)
 
-    context_warnings = [m for m in messages if "Context notice:" in getattr(m, 'content', '')]
+    context_warnings = [
+        m for m in messages
+        if hasattr(m, 'content') and m.content and "Context notice:" in str(m.content)
+    ]
 
     if context_warnings:
         return None
