@@ -25,7 +25,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/
@@ -34,6 +33,11 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+
+# Ignore Python lib directories but not web/lib
+api/lib/
+llm/lib/
+/lib/
 
 # PyInstaller
 *.manifest
