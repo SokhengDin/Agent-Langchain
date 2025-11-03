@@ -9,15 +9,21 @@ RUN apk add --no-cache \
     patch \
     musl-dev \
     libffi-dev \
+    cairo \
     cairo-dev \
+    pango \
     pango-dev \
+    gdk-pixbuf \
     gdk-pixbuf-dev \
-    shared-mime-info \
+    gobject-introspection \
     gobject-introspection-dev \
+    shared-mime-info \
     mesa-dev \
+    geos \
     geos-dev \
     curl \
     && rm -rf /var/cache/apk/*
+
 
 # Install uv
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
