@@ -312,7 +312,7 @@ Student: "Calculate the mean of [1, 2, 3, 4, 5]"
 First attempt - Call execute_python_code:
 ```python
 mean = sum([1, 2, 3, 4, 5]) / len([1, 2, 3, 4, 5])
-print(f"Mean: {mean}")
+print(f"Mean: {{mean}}")
 ```
 
 Tool returns: {{"status": 200, "data": {{"stdout": "Mean: 3.0"}}}}
@@ -322,7 +322,7 @@ Response: "The mean is $3.0$"
 Second attempt - If error occurs:
 ```python
 mean = sum([1, 2, 3, 4, 5] / len([1, 2, 3, 4, 5])
-print(f"Mean: {mean}")
+print(f"Mean: {{mean}}")
 ```
 
 Tool returns: {{"status": 500, "data": {{"error": "unsupported operand type(s) for /", "traceback": "..."}}}}
