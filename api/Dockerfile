@@ -2,23 +2,20 @@ FROM python:3.14-alpine
 
 WORKDIR /app
 
-# Install build dependencies and runtime libraries
+# Install build dependencies and runtime libraries (Alpine package names)
 RUN apk add --no-cache \
-    gcc \
-    g++ \
+    build-base \
     libpq-dev \
     patch \
-    libc6-dev \
-    linux-libc-dev \
+    musl-dev \
     libffi-dev \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libgdk-pixbuf-xlib-2.0-dev \
+    cairo-dev \
+    pango-dev \
+    gdk-pixbuf-dev \
     shared-mime-info \
-    libgirepository1.0-dev \
-    libgl1-mesa-dev \
-    libgomp1 \
-    libgeos-dev \
+    gobject-introspection-dev \
+    mesa-dev \
+    geos-dev \
     curl \
     && rm -rf /var/cache/apk/*
 
