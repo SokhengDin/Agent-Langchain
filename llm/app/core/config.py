@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     API_V1_STR      : str = "/api/v1"
 
     API_BASE_URL    : str = config('API_BASE_URL'       , cast=str)
+    FRONT_API_BASE_URL  : str = config('FRONT_API_BASE_URL', cast=str)
 
     PORT            : int = config('PORT'               , cast=int)
     OPENAI_API_KEY  : str = config('OPENAI_API_KEY'     , cast=str)

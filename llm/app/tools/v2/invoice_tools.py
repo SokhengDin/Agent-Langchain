@@ -26,7 +26,7 @@ class InvoiceTools:
         """
         try:
             booking_id_str = str(booking_id)
-            invoice_url = f"{settings.API_BASE_URL}/api/v1/invoice/{booking_id_str}"
+            invoice_url = f"{settings.FRONT_API_BASE_URL}/api/v1/invoice/{booking_id_str}"
 
             logger.info(f"Invoice URL generated for booking: {booking_id_str}")
 

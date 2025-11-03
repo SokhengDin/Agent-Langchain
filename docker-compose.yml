@@ -44,6 +44,7 @@ services:
     restart: unless-stopped
     environment:
       - API_BASE_URL=http://hotel_agent_api:8000
+      - FRONT_API_BASE_URL=https://ams-agent.redalab.org
       - OPENAI_API_KEY=${OPENAI_API_KEY}
       - NVIDIA_NIM_API_KEY=${NVIDIA_NIM_API_KEY}
       - OLLAMA_BASE_URL=${OLLAMA_BASE_URL}
