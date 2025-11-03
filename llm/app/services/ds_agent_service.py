@@ -16,6 +16,7 @@ from app.tools.ds.ml_tools import MLTools
 from app.tools.ds.rag_tools import DSRAGTools
 from app.tools.ds.vision_tools import DSVisionTools
 from app.tools.ds.theoretical_tools import TheoreticalTools
+from app.tools.ds.code_execution_tools import CodeExecutionTools
 
 from app.states.ds_agent_state import DSAgentState
 from app.services.ds_memory_service import DSMemoryService
@@ -25,6 +26,7 @@ from app.middleware.ds.ds_memory_middleware import DSMemoryMiddleware
 from app.middleware.ds.ds_context_middleware import DSContextMiddleware
 from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
+from app.middleware.ds.ds_memory_trim_middleware import trim_messages_middleware, notify_context_limit_middleware
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
@@ -85,6 +87,9 @@ class DSAgentService:
             # Theoretical distribution tools
             , TheoreticalTools.plot_normal_distribution
             , TheoreticalTools.plot_distribution
+
+            # Code execution tools
+            , CodeExecutionTools.execute_python_code
         ]
 
         self.llm = ChatOllama(
@@ -110,6 +115,8 @@ class DSAgentService:
                 self.context_middleware
                 , self.memory_middleware
                 , self.tool_context_middleware
+                , notify_context_limit_middleware
+                , trim_messages_middleware
                 , handle_tool_errors
                 , self.prompt_middleware
             ]
