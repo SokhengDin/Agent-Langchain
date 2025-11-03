@@ -27,6 +27,7 @@ from app.middleware.ds.ds_context_middleware import DSContextMiddleware
 from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
 from app.middleware.ds.ds_memory_trim_middleware import trim_messages_middleware, notify_context_limit_middleware
+from app.middleware.ds.ds_code_execution_middleware import handle_code_execution_feedback
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
@@ -117,6 +118,7 @@ class DSAgentService:
                 , self.tool_context_middleware
                 # , notify_context_limit_middleware
                 # , trim_messages_middleware
+                , handle_code_execution_feedback
                 , handle_tool_errors
                 , self.prompt_middleware
             ]
