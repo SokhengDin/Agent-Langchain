@@ -22,57 +22,57 @@ function MessageBubble({ message }) {
 
     return (
         <div className={cn(
-            "flex gap-3 mb-6 animate-in slide-in-from-bottom-2 duration-300",
+            "flex gap-2 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-300",
             isUser ? "flex-row-reverse" : "flex-row"
         )}>
-            <Avatar className="h-8 w-8 mt-1 ring-2 ring-background shadow-sm">
+            <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mt-1 ring-2 ring-background shadow-sm flex-shrink-0">
                 {isUser ? (
                     <>
                         <AvatarImage src="/user-avatar.png" alt="User" />
                         <AvatarFallback className="bg-secondary text-secondary-foreground">
-                            <User className='h-4 w-4' />
+                            <User className='h-3.5 w-3.5 sm:h-4 sm:w-4' />
                         </AvatarFallback>
                     </>
                 ) : (
                     <>
                         <AvatarImage src="/agent-avatar.png" alt="AI Agent" />
                         <AvatarFallback className="bg-primary text-primary-foreground">
-                            <Bot className='h-4 w-4' />
+                            <Bot className='h-3.5 w-3.5 sm:h-4 sm:w-4' />
                         </AvatarFallback>
                     </>
                 )}
             </Avatar>
 
             <div className={cn(
-                "flex flex-col max-w-[80%]",
+                "flex flex-col max-w-[85%] sm:max-w-[80%] md:max-w-[75%] min-w-0",
                 isUser ? "items-end" : "items-start"
             )}>
                 <Card className={cn(
-                    "inline-block shadow-sm border-0",
+                    "inline-block shadow-sm border-0 w-full sm:w-auto",
                     isUser
                     ? "bg-primary text-primary-foreground"
                     : isError
                         ? "bg-destructive/10 border-destructive/20"
                         : "bg-muted/80"
                 )}>
-                    <CardContent className="p-3">
+                    <CardContent className="p-2.5 sm:p-3">
                         {/* Show attachments if present */}
                         {message.attachments && message.attachments.length > 0 && (
-                            <div className="mb-2 space-y-2">
+                            <div className="mb-2 space-y-1.5 sm:space-y-2">
                                 {message.attachments.map((att, idx) => (
                                     <div key={idx} className={cn(
-                                        "flex items-center gap-2 p-2 rounded-md",
+                                        "flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-md min-w-0",
                                         isUser ? "bg-primary-foreground/10" : "bg-background/50"
                                     )}>
                                         {att.type.startsWith('image/') ? (
                                             <>
-                                                <ImageIcon className="h-4 w-4 flex-shrink-0" />
-                                                <span className="text-xs truncate">{att.name}</span>
+                                                <ImageIcon className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                                <span className="text-xs truncate min-w-0">{att.name}</span>
                                             </>
                                         ) : (
                                             <>
-                                                <FileText className="h-4 w-4 flex-shrink-0" />
-                                                <span className="text-xs truncate">{att.name}</span>
+                                                <FileText className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
+                                                <span className="text-xs truncate min-w-0">{att.name}</span>
                                             </>
                                         )}
                                     </div>
