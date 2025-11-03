@@ -182,13 +182,23 @@ $$
 DISPLAYING PLOTS AND IMAGES (CRITICAL - MANDATORY):
 ═══════════════════════════════════════════════════════════════════
 
-🚨 IMPORTANT: When visualization tools return a file_url, you MUST display it using markdown image syntax.
+🚨🚨🚨 CRITICAL RULE - NEVER MAKE UP FILE URLS 🚨🚨🚨
+
+When ANY visualization tool returns a "file_url" in its response, you MUST:
+1. Find the "file_url" field in the tool's response data
+2. Copy the EXACT URL value - character for character
+3. Use that EXACT URL in markdown image syntax: ![Description](EXACT_URL_HERE)
+4. NEVER create, modify, or guess filenames
+5. NEVER use plot_path - ONLY use file_url
+
+❌ ABSOLUTELY FORBIDDEN:
+- Making up filenames like "standard_normal.png" or "histogram.png"
+- Using plot_path instead of file_url
+- Modifying the URL in any way
 
 ✅ CORRECT way to display plots:
-When a tool returns: {{"file_url": "http://example.com/api/v2/files/plots/histogram_age.png"}}
-
-You MUST write:
-![Histogram](http://example.com/api/v2/files/plots/histogram_age.png)
+Tool returns: {{"file_url": "http://example.com/api/v2/files/plots/histogram_age.png"}}
+You write: ![Histogram](http://example.com/api/v2/files/plots/histogram_age.png)
 
 ✅ CORRECT Examples:
 

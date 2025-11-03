@@ -102,24 +102,75 @@ async def upload_pdf(file: UploadFile = File(...)):
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 
+@router.post("/data")
+async def upload_data(file: UploadFile = File(...)):
+    """
+    Upload data file (CSV or Excel) and save to disk.
+    Returns the file path for use with data analysis tools.
+    """
+    try:
+        allowed_extensions = {".csv", ".xlsx", ".xls"}
+        file_ext = Path(file.filename).suffix.lower()
+
+        if file_ext not in allowed_extensions:
+            raise HTTPException(
+                status_code=400
+                , detail=f"Unsupported format. Allowed: {', '.join(allowed_extensions)}"
+            )
+
+        upload_dir = Path("uploads/data")
+        upload_dir.mkdir(parents=True, exist_ok=True)
+
+        timestamp   = datetime.now().strftime("%Y%m%d_%H%M%S")
+        unique_id   = str(uuid.uuid4())[:8]
+        filename    = f"{timestamp}_{unique_id}{file_ext}"
+        file_path   = upload_dir / filename
+
+        content = await file.read()
+        with open(file_path, "wb") as f:
+            f.write(content)
+
+        logger.info(f"Data file uploaded: {file_path}")
+
+        return JSONResponse({
+            "status"    : "success"
+            , "message" : "Data file uploaded successfully"
+            , "data"    : {
+                "filename"  : filename
+                , "path"    : str(file_path)
+                , "size"    : len(content)
+            }
+        })
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Failed to upload data file: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+
 @router.post("/file")
 async def upload_file(file: UploadFile = File(...)):
     """
-    Upload any file (auto-detects image or PDF).
+    Upload any file (auto-detects image, PDF, or data file).
     Returns the file path for use with appropriate tools.
     """
     try:
         file_ext = Path(file.filename).suffix.lower()
 
         image_extensions = {".jpg", ".jpeg", ".png", ".webp"}
+        data_extensions = {".csv", ".xlsx", ".xls"}
+
         if file_ext in image_extensions:
             return await upload_image(file)
         elif file_ext == ".pdf":
             return await upload_pdf(file)
+        elif file_ext in data_extensions:
+            return await upload_data(file)
         else:
             raise HTTPException(
                 status_code=400
-                , detail=f"Unsupported file type: {file_ext}. Supported: images (jpg, png, webp) and PDF"
+                , detail=f"Unsupported file type: {file_ext}. Supported: images (jpg, png, webp), PDF, and data files (csv, xlsx, xls)"
             )
 
     except HTTPException:
