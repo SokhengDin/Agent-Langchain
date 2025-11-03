@@ -3,20 +3,34 @@
 import { useRef, useEffect, useState } from "react";
 import { Card } from "./ui/card";
 import { ScrollArea } from "./ui/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "./ui/tabs";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { BrainCircuit, Hotel } from "lucide-react";
 
 import ChatHeader from "./ChatHeader";
 import ChatMessages from "./ChatMessages";
 import ChatInput from "./ChatInput";
 import { useChat } from "@/hooks/useChat";
+import { useDSChat } from "@/hooks/useDSChat";
 
 export default function ChatContainer() {
     const { t } = useLanguage();
-    const { messages, isLoading, sendMessage, agentStatus, thinkingContent }  = useChat();
-    const messagesEndRef                        = useRef(null);
+
+    // Agent type state - default to 'ds-agent'
+    const [activeAgent, setActiveAgent] = useState('ds-agent');
+
+    // Hooks for both agents
+    const hotelChat = useChat();
+    const dsChat = useDSChat();
+
+    // Select the active chat based on agent type
+    const { messages, isLoading, sendMessage, agentStatus, thinkingContent } =
+        activeAgent === 'ds-agent' ? dsChat : hotelChat;
+
+    const messagesEndRef = useRef(null);
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
-    const viewportRef                           = useRef(null);
+    const viewportRef = useRef(null);
 
     const scrollToBottom    = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth'});
@@ -52,10 +66,10 @@ export default function ChatContainer() {
     }, []);
 
     return (
-        <div className="w-full max-w-5xl mx-auto px-4">
+        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <Card className={cn(
                 "flex flex-col overflow-hidden",
-                "h-[85vh] min-h-[600px] max-h-[900px]",
+                "h-[90vh] min-h-[700px] max-h-[1200px]",
                 "bg-card/95 backdrop-blur-sm border-border/50",
                 "shadow-2xl shadow-black/10",
                 "transition-all duration-300 ease-in-out",
@@ -63,15 +77,39 @@ export default function ChatContainer() {
                 "relative group"
             )}>
                 <div className="absolute inset-0 bg-gradient-to-br from-background/5 via-transparent to-muted/5 pointer-events-none rounded-xl" />
-                
+
                 <div className="relative z-10 border-b border-border/50 bg-background/80 backdrop-blur-sm">
-                    <ChatHeader />
+                    <ChatHeader activeAgent={activeAgent} />
+
+                    {/* Agent Tabs */}
+                    <div className="px-4 pb-3">
+                        <Tabs value={activeAgent} onValueChange={setActiveAgent} className="w-full">
+                            <TabsList className="grid w-full grid-cols-2 h-11">
+                                <TabsTrigger
+                                    value="ds-agent"
+                                    className="flex items-center gap-2 text-xs sm:text-sm"
+                                >
+                                    <BrainCircuit className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    <span className="hidden sm:inline">{t('chat.dsAgent')}</span>
+                                    <span className="sm:hidden">{t('chat.dsAgentShort')}</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="hotel-agent"
+                                    className="flex items-center gap-2 text-xs sm:text-sm"
+                                >
+                                    <Hotel className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                                    <span className="hidden sm:inline">{t('chat.hotelAgent')}</span>
+                                    <span className="sm:hidden">{t('chat.hotelAgentShort')}</span>
+                                </TabsTrigger>
+                            </TabsList>
+                        </Tabs>
+                    </div>
                 </div>
                 
                 <div className="flex-1 flex flex-col min-h-0 relative z-10">
                     <div className="flex-1 relative overflow-hidden">
                         <ScrollArea className="h-full w-full">
-                            <div className="p-6 pb-4">
+                            <div className="px-6 sm:px-8 md:px-12 py-6 sm:py-8">
                                 <ChatMessages messages={messages} isLoading={isLoading} agentStatus={agentStatus} thinkingContent={thinkingContent} />
                                 <div ref={messagesEndRef} />
                             </div>

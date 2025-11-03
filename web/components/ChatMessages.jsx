@@ -7,9 +7,114 @@ import { cn } from '@/lib/utils';
 import { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import { codeToHtml } from 'shiki';
 import AgentStatus from './AgentStatus';
+import 'katex/dist/katex.min.css';
 import ThinkingIndicator from './ThinkingIndicator';
 import { FileText, Image as ImageIcon } from 'lucide-react';
+
+/**
+ * Code Block Component with Shiki highlighting
+ */
+function CodeBlock({ children, className, ...props }) {
+    const [highlightedHtml, setHighlightedHtml] = useState(null);
+    const [copied, setCopied] = useState(false);
+
+    // Extract language
+    const match = /language-(\w+)/.exec(className || '');
+    const language = match ? match[1] : '';
+    const code = String(children).replace(/\n$/, '');
+
+    useEffect(() => {
+        if (language) {
+            codeToHtml(code, {
+                lang: language,
+                theme: 'github-dark-default'
+            })
+                .then((html) => {
+                    setHighlightedHtml(html);
+                })
+                .catch((err) => {
+                    console.error('Shiki highlighting error:', err);
+                    setHighlightedHtml(null);
+                });
+        }
+    }, [code, language]);
+
+    const handleCopy = async () => {
+        try {
+            await navigator.clipboard.writeText(code);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+            console.error('Failed to copy:', err);
+        }
+    };
+
+    // Inline code
+    if (!language) {
+        return (
+            <code className='bg-muted px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all' {...props}>
+                {children}
+            </code>
+        );
+    }
+
+    // Code block with Shiki
+    if (highlightedHtml) {
+        return (
+            <div className="relative my-2">
+                <button
+                    onClick={handleCopy}
+                    className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-all duration-200 z-20"
+                    aria-label="Copy code"
+                    title={copied ? 'Copied!' : 'Copy code'}
+                >
+                    {copied ? (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                    ) : (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        </svg>
+                    )}
+                </button>
+                <div
+                    className="overflow-x-auto rounded-md text-xs sm:text-sm"
+                    dangerouslySetInnerHTML={{ __html: highlightedHtml }}
+                />
+            </div>
+        );
+    }
+
+    // Loading or fallback
+    return (
+        <div className="relative my-2">
+            <button
+                onClick={handleCopy}
+                className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-all duration-200 z-20"
+                aria-label="Copy code"
+                title={copied ? 'Copied!' : 'Copy code'}
+            >
+                {copied ? (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                ) : (
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                    </svg>
+                )}
+            </button>
+            <pre className="bg-[#0d1117] text-gray-300 overflow-x-auto rounded-md p-3 text-[11px] sm:text-xs">
+                <code className="font-mono">{code}</code>
+            </pre>
+        </div>
+    );
+}
 
 function MessageBubble({ message }) {
     const [mounted, setMounted] = useState(false);
@@ -84,19 +189,14 @@ function MessageBubble({ message }) {
                         ) : (
                             <div className='text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert min-w-0'>
                                 <ReactMarkdown
-                                    remarkPlugins={[remarkGfm]}
+                                    remarkPlugins={[remarkGfm, remarkMath]}
+                                    rehypePlugins={[rehypeKatex]}
                                     components={{
                                         p: ({node, ...props}) => <p className='mb-2 last:mb-0 break-words' {...props} />,
                                         ul: ({node, ...props}) => <ul className='mb-2 ml-3 sm:ml-4 list-disc' {...props} />,
                                         ol: ({node, ...props}) => <ol className='mb-2 ml-3 sm:ml-4 list-decimal' {...props} />,
                                         li: ({node, ...props}) => <li className='mb-1 break-words' {...props} />,
-                                        code: ({node, inline, ...props}) =>
-                                            inline ? (
-                                                <code className='bg-muted px-1 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all' {...props} />
-                                            ) : (
-                                                <code className='block bg-muted p-2 sm:p-3 rounded-md text-[11px] sm:text-xs font-mono overflow-x-auto my-2 max-w-full' {...props} />
-                                            ),
-                                        pre: ({node, ...props}) => <pre className='bg-muted rounded-md overflow-x-auto my-2 max-w-full' {...props} />,
+                                        code: CodeBlock,
                                         h1: ({node, ...props}) => <h1 className='text-base sm:text-lg font-bold mb-2 mt-4 first:mt-0 break-words' {...props} />,
                                         h2: ({node, ...props}) => <h2 className='text-sm sm:text-base font-bold mb-2 mt-3 first:mt-0 break-words' {...props} />,
                                         h3: ({node, ...props}) => <h3 className='text-xs sm:text-sm font-bold mb-1 mt-2 first:mt-0 break-words' {...props} />,

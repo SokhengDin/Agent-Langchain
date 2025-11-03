@@ -1,9 +1,9 @@
+import fitz
 from typing import Dict, List, Optional, Annotated
 from pathlib import Path
-import fitz
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 from langchain_core.tools import tool
 from langgraph.prebuilt import InjectedState

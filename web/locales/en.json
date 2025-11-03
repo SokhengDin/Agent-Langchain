@@ -1,8 +1,14 @@
 {
   "chat": {
     "title": "AI Assistant",
+    "dsTitle": "Data Science Assistant",
+    "dsAgent": "Data Science Agent",
+    "dsAgentShort": "DS Agent",
+    "hotelAgent": "Hotel Agent",
+    "hotelAgentShort": "Hotel",
     "subtitle": "How can I help you today?",
     "greeting": "Hello! How can I help you?",
+    "dsGreeting": "Hello! I'm your Data Science Learning Assistant. I can help you with probability, statistics, machine learning, and deep learning concepts. I can also analyze datasets, create visualizations, and assist with coding exercises. How can I help you today?",
     "placeholder": "Type your message...",
     "send": "Send",
     "typing": "AI is typing...",
