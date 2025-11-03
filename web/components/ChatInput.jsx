@@ -34,9 +34,18 @@ export default function ChatInput({ onSendMessage, disabled }) {
         try {
             const uploadPromises = files.map(async (file) => {
                 // Validate file type
-                const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+                const allowedTypes = [
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/png',
+                    'image/webp',
+                    'application/pdf',
+                    'text/csv',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                ];
                 if (!allowedTypes.includes(file.type)) {
-                    throw new Error(`Invalid file type: ${file.type}. Only images and PDFs are allowed.`);
+                    throw new Error(`Invalid file type: ${file.type}. Only images, PDFs, CSV, and Excel files are allowed.`);
                 }
 
                 // Create preview for images
@@ -116,7 +125,7 @@ export default function ChatInput({ onSendMessage, disabled }) {
             <input
                 ref={fileInputRef}
                 type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf"
+                accept="image/jpeg,image/jpg,image/png,image/webp,application/pdf,text/csv,.csv,application/vnd.ms-excel,.xls,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,.xlsx"
                 multiple
                 onChange={handleFileSelect}
                 className="hidden"

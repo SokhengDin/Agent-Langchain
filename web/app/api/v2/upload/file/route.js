@@ -53,8 +53,17 @@ export async function GET() {
             status: 'success',
             data: {
                 maxFileSizeMB: 10,
-                allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'],
-                categories: ['images', 'documents'],
+                allowedTypes: [
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/png',
+                    'image/webp',
+                    'application/pdf',
+                    'text/csv',
+                    'application/vnd.ms-excel',
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                ],
+                categories: ['images', 'documents', 'spreadsheets'],
                 endpoints: {
                     image: '/api/v2/upload/image',
                     pdf: '/api/v2/upload/pdf',

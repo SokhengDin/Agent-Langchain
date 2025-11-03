@@ -57,7 +57,7 @@ class VizTools:
             plt.close()
 
             filename = Path(output_path).name
-            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+            file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
             logger.info(f"Histogram saved: {output_path}")
 
@@ -120,7 +120,7 @@ class VizTools:
             plt.close()
 
             filename = Path(output_path).name
-            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+            file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
             logger.info(f"Scatter plot saved: {output_path}")
             logger.debug(f"Scatter plot URL: {file_url}")
@@ -186,7 +186,7 @@ class VizTools:
             plt.close()
 
             filename = Path(output_path).name
-            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+            file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
             logger.info(f"Heatmap saved: {output_path}")
 
@@ -252,7 +252,7 @@ class VizTools:
             plt.close()
 
             filename = Path(output_path).name
-            file_url = f"{settings.API_BASE_URL}/api/v2/files/plots/{filename}"
+            file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
             logger.info(f"Box plot saved: {output_path}")
 

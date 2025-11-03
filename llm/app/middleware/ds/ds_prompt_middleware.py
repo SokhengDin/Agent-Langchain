@@ -2,6 +2,7 @@ from langchain.agents.middleware import dynamic_prompt, ModelRequest
 from langchain_core.prompts import ChatPromptTemplate
 
 from app import logger
+from app.core.config import settings
 
 def create_ds_dynamic_prompt(prompt_template: ChatPromptTemplate):
 
@@ -49,7 +50,7 @@ def create_ds_dynamic_prompt(prompt_template: ChatPromptTemplate):
                 tools           = formatted_tools
                 , context       = request.state.get("context", {})
                 , recall_memories= recall_str
-                , api_base_url  = request.state.get("api_base_url", "http://localhost:8000")
+                , api_base_url  = request.state.get("api_base_url", settings.FRONT_API_BASE_URL)
             )
 
             if prompt_messages and len(prompt_messages) > 0:

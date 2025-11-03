@@ -24,7 +24,9 @@ export default function WelcomeModal() {
         email: '',
         password: '',
         confirmPassword: '',
-        name: ''
+        first_name: '',
+        last_name: '',
+        phone_number: ''
     });
 
     const handleClose = () => {
@@ -77,9 +79,11 @@ export default function WelcomeModal() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                    first_name: registerData.first_name,
+                    last_name: registerData.last_name,
                     email: registerData.email,
+                    phone_number: registerData.phone_number,
                     password: registerData.password,
-                    name: registerData.name,
                 }),
             });
 
@@ -325,18 +329,34 @@ export default function WelcomeModal() {
                             )}
 
                             <form onSubmit={handleRegister} className="space-y-4">
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-foreground">
-                                        Name
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        placeholder="Enter your name"
-                                        value={registerData.name}
-                                        onChange={(e) => setRegisterData({ ...registerData, name: e.target.value })}
-                                        required
-                                        disabled={isLoading}
-                                    />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-foreground">
+                                            First Name
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            placeholder="First name"
+                                            value={registerData.first_name}
+                                            onChange={(e) => setRegisterData({ ...registerData, first_name: e.target.value })}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-foreground">
+                                            Last Name
+                                        </label>
+                                        <Input
+                                            type="text"
+                                            placeholder="Last name"
+                                            value={registerData.last_name}
+                                            onChange={(e) => setRegisterData({ ...registerData, last_name: e.target.value })}
+                                            required
+                                            disabled={isLoading}
+                                        />
+                                    </div>
                                 </div>
 
                                 <div className="space-y-2">
@@ -348,6 +368,20 @@ export default function WelcomeModal() {
                                         placeholder="Enter your email"
                                         value={registerData.email}
                                         onChange={(e) => setRegisterData({ ...registerData, email: e.target.value })}
+                                        required
+                                        disabled={isLoading}
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-sm font-medium text-foreground">
+                                        Phone Number
+                                    </label>
+                                    <Input
+                                        type="tel"
+                                        placeholder="Enter your phone number"
+                                        value={registerData.phone_number}
+                                        onChange={(e) => setRegisterData({ ...registerData, phone_number: e.target.value })}
                                         required
                                         disabled={isLoading}
                                     />

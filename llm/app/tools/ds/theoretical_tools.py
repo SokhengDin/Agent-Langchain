@@ -10,6 +10,7 @@ from langchain_core.tools import tool
 from langgraph.prebuilt import InjectedState
 
 from app import logger
+from app.core.config import settings
 
 class TheoreticalTools:
     """Tools for plotting theoretical distributions"""
@@ -56,11 +57,15 @@ class TheoreticalTools:
 
             logger.info(f"Normal distribution plot saved: {output_path}")
 
+            filename = Path(output_path).name
+            file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
+
             return {
                 "status"    : 200
                 , "message" : "Normal distribution plotted"
                 , "data"    : {
                     "plot_path" : output_path
+                    , "file_url": file_url
                     , "mu"      : mu
                     , "sigma"   : sigma
                 }
@@ -160,11 +165,15 @@ class TheoreticalTools:
 
             logger.info(f"{distribution} distribution plot saved: {output_path}")
 
+            filename = Path(output_path).name
+            file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
+
             return {
                 "status"    : 200
                 , "message" : f"{distribution} distribution plotted"
                 , "data"    : {
                     "plot_path"     : output_path
+                    , "file_url"    : file_url
                     , "distribution": distribution
                     , "params"      : params
                 }

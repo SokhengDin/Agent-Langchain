@@ -137,7 +137,7 @@ class DSAgentService:
                 , "uploaded_files"  : []
                 , "current_dataframe": None
                 , "context"         : {}
-                , "api_base_url"    : settings.API_BASE_URL
+                , "api_base_url"    : settings.FRONT_API_BASE_URL
             }
 
             result = await self.agent.ainvoke(
@@ -174,7 +174,7 @@ class DSAgentService:
                 , "uploaded_files"  : []
                 , "current_dataframe": None
                 , "context"         : {}
-                , "api_base_url"    : settings.API_BASE_URL
+                , "api_base_url"    : settings.FRONT_API_BASE_URL
             }
 
             yield {

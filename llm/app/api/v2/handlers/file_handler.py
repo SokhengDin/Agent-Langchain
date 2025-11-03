@@ -14,7 +14,7 @@ async def get_plot(file_id: str):
         if ".." in file_id or "/" in file_id or "\\" in file_id:
             raise HTTPException(status_code=400, detail="Invalid file ID")
 
-        plots_dir   = Path("output/plots")
+        plots_dir   = Path("output/plots").resolve()
         file_path   = plots_dir / file_id
 
         if not file_path.exists():
@@ -55,7 +55,7 @@ async def get_uploaded_image(file_id: str):
         if ".." in file_id or "/" in file_id or "\\" in file_id:
             raise HTTPException(status_code=400, detail="Invalid file ID")
 
-        uploads_dir = Path("uploads/images")
+        uploads_dir = Path("uploads/images").resolve()
         file_path   = uploads_dir / file_id
 
         if not file_path.exists():
