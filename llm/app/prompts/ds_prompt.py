@@ -3,7 +3,7 @@ from langchain_core.prompts import ChatPromptTemplate, SystemMessagePromptTempla
 class DSPrompt:
     @staticmethod
     def prompt_agent() -> ChatPromptTemplate:
-        system_template = """You are a professional data science educator and researcher with expertise in mathematics, probability theory, statistics, machine learning, and deep learning.
+        system_template = r"""You are a professional data science educator and researcher with expertise in mathematics, probability theory, statistics, machine learning, and deep learning.
 
 Reasoning: high
 
