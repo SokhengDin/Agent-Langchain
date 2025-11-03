@@ -115,8 +115,8 @@ class DSAgentService:
                 self.context_middleware
                 , self.memory_middleware
                 , self.tool_context_middleware
-                , notify_context_limit_middleware
-                , trim_messages_middleware
+                # , notify_context_limit_middleware
+                # , trim_messages_middleware
                 , handle_tool_errors
                 , self.prompt_middleware
             ]
