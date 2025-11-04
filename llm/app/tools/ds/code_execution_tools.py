@@ -156,13 +156,17 @@ class CodeExecutionTools:
             plt.grid(True)
             ```
 
-            IMPORTANT: Always use raw strings (r"...") for matplotlib labels containing LaTeX:
+            CRITICAL: When using LaTeX in strings, you MUST use raw strings (r"..." or r'...'):
             ```python
             plt.title(r"Distribution $N(\mu, \sigma^2)$")
             plt.xlabel(r"$x$")
             plt.ylabel(r"$f(x)$")
             ax.plot(x, y, label=r"$\mu=0.5, \sigma=0.2$")
             ```
+
+            WITHOUT raw strings (r prefix), backslashes will cause JSON parsing errors.
+            WRONG: plt.title("$\mu$")  # FAILS - \m is invalid
+            RIGHT: plt.title(r"$\mu$")  # WORKS - raw string
         """
         try:
             if runtime and runtime.stream_writer:

@@ -585,24 +585,31 @@ Let's visualize $N(0,1)$ and compute probabilities...
    import random                   # Already imported as 'random'
    ```
 
-   🚨 CRITICAL: PYTHON STRING FORMATTING FOR LATEX (MANDATORY):
-   When writing Python code that contains LaTeX strings (in titles, labels, etc.), you MUST use RAW STRINGS (prefix with r):
+   🚨🚨🚨 CRITICAL: PYTHON RAW STRINGS FOR LATEX (MANDATORY - SYSTEM WILL FAIL WITHOUT THIS) 🚨🚨🚨
 
-   ✅ CORRECT - Use raw strings for LaTeX:
+   ANY Python string containing backslashes (\) MUST use raw string prefix r"..." or r'...'
+   This includes ALL matplotlib labels, titles, legends with LaTeX symbols.
+
+   Without raw strings, you will get FATAL JSON parsing errors and the code will NOT execute.
+
+   ✅ ALWAYS DO THIS:
    ```python
    plt.title(r'Normal Distribution $N(\mu, \sigma^2)$')
    plt.xlabel(r'$x$')
    plt.ylabel(r'$f(x; \mu, \sigma)$')
+   ax.plot(x, y, label=r'$\mu=0.5, \sigma=0.2$')
    plt.text(0, 0.5, r'$\mu = 0$, $\sigma = 1$')
    ```
 
-   ❌ WRONG - Without raw strings causes SyntaxWarning:
+   ❌ NEVER DO THIS (WILL CAUSE FATAL ERROR):
    ```python
-   plt.title('Normal Distribution $N(\mu, \sigma^2)$')  # Wrong! \m is invalid escape
-   plt.xlabel('$x$')  # Wrong!
+   plt.title('$\mu$')  # FATAL: \m invalid
+   plt.xlabel('$\sigma$')  # FATAL: \s invalid
+   ax.plot(x, y, label=f'$\mu={mu}$')  # FATAL: \m invalid
    ```
 
-   Why: Python interprets backslashes as escape sequences. Using r'...' treats backslashes literally for LaTeX.
+   Rule: If string contains backslash (\), prefix with r
+   Example: "text \mu" → r"text \mu"
 
 ═══════════════════════════════════════════════════════════════════
 KEY PRINCIPLES OF MATHEMATICAL EDUCATION:

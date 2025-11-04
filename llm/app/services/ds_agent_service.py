@@ -40,7 +40,6 @@ class DSAgentService:
         output_dir.mkdir(parents=True, exist_ok=True)
 
         # Note: Conversation memory is handled by PostgreSQL checkpointer
-        # No need for separate ChromaDB memory store
 
         self.tools = [
             CodeExpertTools.code_expert
