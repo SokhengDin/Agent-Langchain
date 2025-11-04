@@ -103,6 +103,7 @@ services:
 
 volumes:
   database_agent_volume:
+  pgvector_data:
 
 networks:
   ams_network:
