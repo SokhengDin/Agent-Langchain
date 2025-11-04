@@ -248,8 +248,50 @@ class DSAgentService:
 
         except Exception as e:
             import traceback
+            from ollama._types import ResponseError
+            from app.middleware.ds.ds_tool_json_fix_middleware import create_json_error_feedback
+
             logger.error(f"Error in conversation stream: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
+
+            if isinstance(e, ResponseError) and "error parsing tool call" in str(e):
+                logger.warning("Detected Ollama tool JSON parsing error - providing feedback for retry")
+
+                feedback_msg = create_json_error_feedback(e)
+                state["messages"].append(feedback_msg)
+
+                try:
+                    async for stream_mode, chunk in self.agent.astream(
+                        state
+                        , config        = config
+                        , stream_mode   = ["messages", "updates"]
+                    ):
+                        if stream_mode == "messages":
+                            token_data, metadata = chunk
+                            node = metadata.get("langgraph_node")
+
+                            if node == "model" and hasattr(token_data, 'content'):
+                                content = token_data.content
+                                if content:
+                                    yield {
+                                        "type"      : "token"
+                                        , "content" : content
+                                    }
+
+                    yield {
+                        "type"      : "done"
+                        , "thread_id": thread_id
+                    }
+                    return
+
+                except Exception as retry_error:
+                    logger.error(f"Retry after feedback also failed: {str(retry_error)}")
+                    yield {
+                        "type"  : "error"
+                        , "error": f"Tool call failed even after retry: {str(retry_error)}"
+                    }
+                    return
+
             yield {
                 "type"  : "error"
                 , "error": str(e)
