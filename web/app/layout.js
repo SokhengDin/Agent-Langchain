@@ -108,27 +108,32 @@ export const metadata = {
   icons: {
     icon: [
       {
-        url: "/logo/logo.jpg",
-        sizes: "32x32",
-        type: "image/jpeg",
+        url: "/favicon.ico",
+        sizes: "48x48",
+        type: "image/x-icon",
       },
       {
-        url: "/logo/logo.jpg", 
+        url: "/logo/favicon-32x32.png",
+        sizes: "32x32",
+        type: "image/png",
+      },
+      {
+        url: "/logo/favicon-16x16.png",
         sizes: "16x16",
-        type: "image/jpeg",
+        type: "image/png",
       }
     ],
     apple: [
       {
-        url: "/logo/logo.jpg",
+        url: "/logo/apple-touch-icon.png",
         sizes: "180x180",
-        type: "image/jpeg",
+        type: "image/png",
       }
     ],
     other: [
       {
         rel: "apple-touch-icon-precomposed",
-        url: "/logo/logo.jpg",
+        url: "/logo/apple-touch-icon.png",
       }
     ]
   },
@@ -156,11 +161,13 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <link rel="icon" href="/logo/logo.jpg" sizes="any" />
-        <link rel="apple-touch-icon" href="/logo/logo.jpg" />
+        <link rel="icon" href="/favicon.ico" sizes="48x48" />
+        <link rel="icon" href="/logo/favicon-32x32.png" type="image/png" sizes="32x32" />
+        <link rel="icon" href="/logo/favicon-16x16.png" type="image/png" sizes="16x16" />
+        <link rel="apple-touch-icon" href="/logo/apple-touch-icon.png" sizes="180x180" />
         <meta name="theme-color" content="#ffffff" />
         <meta name="msapplication-TileColor" content="#ffffff" />
-        <meta name="msapplication-TileImage" content="/logo/logo.jpg" />
+        <meta name="msapplication-TileImage" content="/logo/icon-512x512.png" />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${notoSansKhmer.variable} antialiased`}

@@ -39,8 +39,8 @@ def create_ds_dynamic_prompt(prompt_template: ChatPromptTemplate):
                                 param_desc = param_info.get('description', 'No description')
                                 is_required = "(required)" if param_name in required else "(optional)"
                                 tool_info.append(f"  - {param_name} ({param_type}) {is_required}: {param_desc}")
-                    except Exception as e:
-                        logger.warning(f"Could not extract schema for tool {tool.name}: {str(e)}")
+                    except Exception:
+                        pass
 
                 tool_descriptions.append("\n".join(tool_info))
 
