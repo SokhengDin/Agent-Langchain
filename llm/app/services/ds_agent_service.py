@@ -77,9 +77,9 @@ class DSAgentService:
 
         self.llm = ChatOllama(
             base_url    = settings.OLLAMA_BASE_URL
-            , model     = "gpt-oss:20b"
+            , model     = "qwen3-coder:30b"
             , temperature= 0.3
-            , num_ctx   = 16384
+            , num_ctx   = 131072
             , reasoning = True
             , streaming = True
         )
@@ -166,8 +166,8 @@ class DSAgentService:
                 message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
             config  = {
-                "configurable": {"thread_id": thread_id},
-                "recursion_limit": 50  # Increase from default 25 to handle complex tasks
+                "configurable"          : {"thread_id": thread_id}
+                , "recursion_limit"     : 50 
             }
 
             state   = {"messages": [HumanMessage(content=message_content)]}
