@@ -49,6 +49,10 @@ RUN uv pip install --system --no-cache .
 # Copy application code
 COPY . .
 
+# Copy and set up entrypoint script
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
+
 # Create logs directory and set permissions
 RUN mkdir -p /app/logs && \
     if [ "${USER_ID}" != "0" ]; then \
@@ -57,4 +61,5 @@ RUN mkdir -p /app/logs && \
 
 EXPOSE 8000
 
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["fastapi", "run", "main.py", "--port", "8000", "--proxy-headers"]
