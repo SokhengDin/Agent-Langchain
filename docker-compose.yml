@@ -66,6 +66,7 @@ services:
       - api
     restart: unless-stopped
     user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
+    shm_size: '2gb'
     environment:
       - API_BASE_URL=http://hotel_agent_api:8000
       - FRONT_API_BASE_URL=https://ams-agent.redalab.org

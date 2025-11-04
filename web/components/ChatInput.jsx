@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { Send, Paperclip, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,6 +15,19 @@ export default function ChatInput({ onSendMessage, disabled }) {
     const [attachments, setAttachments] = useState([]);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRef = useRef(null);
+    const textareaRef = useRef(null);
+
+    // Auto-resize textarea as user types
+    useEffect(() => {
+        const textarea = textareaRef.current;
+        if (textarea) {
+            // Reset height to auto to get the correct scrollHeight
+            textarea.style.height = 'auto';
+            // Set height based on scrollHeight, with max of 200px
+            const newHeight = Math.min(textarea.scrollHeight, 200);
+            textarea.style.height = `${newHeight}px`;
+        }
+    }, [message]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -22,6 +35,10 @@ export default function ChatInput({ onSendMessage, disabled }) {
             onSendMessage(message, attachments);
             setMessage('');
             setAttachments([]);
+            // Reset textarea height after sending
+            if (textareaRef.current) {
+                textareaRef.current.style.height = 'auto';
+            }
         }
     };
 
@@ -109,11 +126,13 @@ export default function ChatInput({ onSendMessage, disabled }) {
         fileInputRef.current?.click();
     };
 
-    const handleKeyPress = (e) => {
+    const handleKeyDown = (e) => {
+        // Submit on Enter (without Shift)
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSubmit(e);
         }
+        // Allow Shift+Enter for new lines
     };
 
     const hasMessage = message.trim().length > 0;
@@ -154,23 +173,26 @@ export default function ChatInput({ onSendMessage, disabled }) {
                             : "border-border hover:border-border/80",
                         disabled && "opacity-50"
                     )}>
-                        <Input
+                        <Textarea
+                            ref={textareaRef}
                             value={message}
                             onChange={(e) => setMessage(e.target.value)}
-                            onKeyPress={handleKeyPress}
+                            onKeyDown={handleKeyDown}
                             onFocus={() => setIsFocused(true)}
                             onBlur={() => setIsFocused(false)}
                             placeholder={t('chat.placeholder')}
                             disabled={disabled}
+                            rows={1}
                             className={cn(
-                                "border-0 bg-transparent pr-16 pl-4 py-3 min-h-[52px]",
+                                "border-0 bg-transparent pr-16 pl-4 py-3 min-h-[52px] max-h-[200px]",
                                 "text-base placeholder:text-muted-foreground/70",
                                 "focus-visible:ring-0 focus-visible:ring-offset-0",
-                                "resize-none transition-all duration-200"
+                                "resize-none transition-all duration-200",
+                                "overflow-y-auto scrollbar-thin"
                             )}
                         />
 
-                        <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        <div className="absolute right-2 top-3 flex items-center gap-1">
                             <Button
                                 type="button"
                                 variant="ghost"
@@ -202,8 +224,8 @@ export default function ChatInput({ onSendMessage, disabled }) {
                     type="submit"
                     disabled={!canSubmit}
                     className={cn(
-                        "h-[52px] w-[52px] p-0 rounded-xl transition-all duration-300 ease-in-out",
-                        "relative overflow-hidden group",
+                        "h-[52px] w-[52px] p-0 rounded-xl transition-all duration-300 ease-in-out flex-shrink-0",
+                        "relative overflow-hidden group self-end",
                         canSubmit
                             ? [
                                 "bg-primary hover:bg-primary/90 shadow-lg shadow-primary/25",
