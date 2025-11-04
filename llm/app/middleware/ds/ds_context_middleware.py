@@ -12,8 +12,13 @@ class DSContextMiddleware(AgentMiddleware):
 
     def before_model(self, state: DSAgentState, runtime) -> Dict[str, Any] | None:
         try:
-            thread_id = runtime.context.get("thread_id", str(uuid4()))
-            context = state.get("context", {})
+            thread_id = None
+            if runtime and runtime.context:
+                thread_id = runtime.context.get("thread_id", str(uuid4()))
+            else:
+                thread_id = str(uuid4())
+
+            context = state.get("context", {}) if state else {}
 
             return {
                 "thread_id" : thread_id
@@ -22,4 +27,4 @@ class DSContextMiddleware(AgentMiddleware):
 
         except Exception as e:
             logger.error(f"Error preparing context: {str(e)}")
-            return {"context": state.get("context", {})}
+            return {"context": state.get("context", {}) if state else {}}

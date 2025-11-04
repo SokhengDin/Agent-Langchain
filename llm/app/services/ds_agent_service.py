@@ -243,7 +243,9 @@ class DSAgentService:
             }
 
         except Exception as e:
+            import traceback
             logger.error(f"Error in conversation stream: {str(e)}")
+            logger.error(f"Traceback: {traceback.format_exc()}")
             yield {
                 "type"  : "error"
                 , "error": str(e)

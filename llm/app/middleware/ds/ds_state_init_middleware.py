@@ -9,30 +9,33 @@ class DSStateInitMiddleware(AgentMiddleware):
 
     def before_model(self, state: DSAgentState, runtime) -> Dict[str, Any] | None:
         try:
+            if state is None:
+                return None
+
             updates = {}
 
-            if "dataset_id" not in state:
+            if state.get("dataset_id") is None:
                 updates["dataset_id"] = None
 
-            if "current_tool" not in state:
+            if state.get("current_tool") is None:
                 updates["current_tool"] = None
 
-            if "uploaded_files" not in state:
+            if state.get("uploaded_files") is None:
                 updates["uploaded_files"] = []
 
-            if "current_dataframe" not in state:
+            if state.get("current_dataframe") is None:
                 updates["current_dataframe"] = None
 
-            if "context" not in state:
+            if state.get("context") is None:
                 updates["context"] = {}
 
-            if "api_base_url" not in state:
+            if state.get("api_base_url") is None:
                 updates["api_base_url"] = settings.FRONT_API_BASE_URL
 
-            if "code_execution_count" not in state:
+            if state.get("code_execution_count") is None:
                 updates["code_execution_count"] = 0
 
-            if "thread_id" not in state:
+            if state.get("thread_id") is None:
                 thread_id = runtime.context.get("thread_id") if runtime and runtime.context else None
                 if thread_id:
                     updates["thread_id"] = thread_id

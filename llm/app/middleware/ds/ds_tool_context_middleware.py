@@ -9,6 +9,9 @@ class DSToolContextMiddleware(AgentMiddleware):
 
     def after_tools(self, state: DSAgentState, runtime=None) -> Dict[str, Any] | None:
         try:
+            if state is None:
+                return None
+
             context = state.get("context", {})
 
             messages = state.get("messages", [])
