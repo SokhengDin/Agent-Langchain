@@ -224,6 +224,8 @@ class CodeExecutionTools:
             import matplotlib.animation as mpl_animation
             import scipy.stats as scipy_stats
 
+            matplotlib.use('Agg', force=True)
+
             local_vars = {
                 'np'            : __import__('numpy')
                 , 'pd'          : __import__('pandas')
