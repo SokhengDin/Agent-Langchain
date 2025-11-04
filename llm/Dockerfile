@@ -15,6 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgirepository1.0-dev \
     libgl1-mesa-dev \
     libgeos-dev \
+    libgomp1 \
     curl \
  && rm -rf /var/lib/apt/lists/*
 

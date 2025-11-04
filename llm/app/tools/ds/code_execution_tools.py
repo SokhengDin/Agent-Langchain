@@ -180,34 +180,34 @@ class CodeExecutionTools:
 
             try:
                 sklearn = __import__('sklearn')
-            except ImportError:
+            except (ImportError, Exception):
                 sklearn = None
 
             try:
                 xgboost = __import__('xgboost')
                 xgb = xgboost
-            except ImportError:
+            except (ImportError, Exception):
                 xgboost = None
                 xgb = None
 
             try:
                 lightgbm = __import__('lightgbm')
                 lgb = lightgbm
-            except ImportError:
+            except (ImportError, Exception):
                 lightgbm = None
                 lgb = None
 
             try:
                 statsmodels = __import__('statsmodels')
                 import statsmodels.api as sm_api
-            except ImportError:
+            except (ImportError, Exception):
                 statsmodels = None
                 sm_api = None
 
             try:
                 polars = __import__('polars')
                 pl = polars
-            except ImportError:
+            except (ImportError, Exception):
                 polars = None
                 pl = None
 
