@@ -209,17 +209,20 @@ class CodeExecutionTools:
                 go = None
                 px = None
 
+            import matplotlib.animation as mpl_animation
+            import scipy.stats as scipy_stats
+
             local_vars = {
                 'np'            : __import__('numpy')
                 , 'pd'          : __import__('pandas')
                 , 'plt'         : plt
                 , 'matplotlib'  : matplotlib
-                , 'animation'   : __import__('matplotlib.animation')
-                , 'FuncAnimation': __import__('matplotlib.animation').FuncAnimation
+                , 'animation'   : mpl_animation
+                , 'FuncAnimation': mpl_animation.FuncAnimation
                 , 'go'          : go
                 , 'px'          : px
                 , 'scipy'       : __import__('scipy')
-                , 'stats'       : __import__('scipy.stats')
+                , 'stats'       : scipy_stats
                 , 'seaborn'     : __import__('seaborn')
                 , 'sns'         : __import__('seaborn')
                 , 'sympy'       : __import__('sympy')
