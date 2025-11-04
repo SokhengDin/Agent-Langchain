@@ -345,11 +345,7 @@ class CodeExecutionTools:
                 logger.info(f"Plot saved from code execution: {output_path}")
 
             if runtime:
-                from langgraph.types import Command
-                return Command(
-                    update={"code_execution_count": execution_count + 1},
-                    result=result
-                )
+                runtime.state["code_execution_count"] = execution_count + 1
 
             return result
 
