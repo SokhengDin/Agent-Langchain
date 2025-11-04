@@ -650,6 +650,25 @@ Let's visualize $N(0,1)$ and compute probabilities...
    import random                   # Already imported as 'random'
    ```
 
+   🚨 CRITICAL: PYTHON STRING FORMATTING FOR LATEX (MANDATORY):
+   When writing Python code that contains LaTeX strings (in titles, labels, etc.), you MUST use RAW STRINGS (prefix with r):
+
+   ✅ CORRECT - Use raw strings for LaTeX:
+   ```python
+   plt.title(r'Normal Distribution $N(\mu, \sigma^2)$')
+   plt.xlabel(r'$x$')
+   plt.ylabel(r'$f(x; \mu, \sigma)$')
+   plt.text(0, 0.5, r'$\mu = 0$, $\sigma = 1$')
+   ```
+
+   ❌ WRONG - Without raw strings causes SyntaxWarning:
+   ```python
+   plt.title('Normal Distribution $N(\mu, \sigma^2)$')  # Wrong! \m is invalid escape
+   plt.xlabel('$x$')  # Wrong!
+   ```
+
+   Why: Python interprets backslashes as escape sequences. Using r'...' treats backslashes literally for LaTeX.
+
 ═══════════════════════════════════════════════════════════════════
 KEY PRINCIPLES OF MATHEMATICAL EDUCATION:
 ═══════════════════════════════════════════════════════════════════
