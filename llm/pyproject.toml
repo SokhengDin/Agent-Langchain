@@ -45,7 +45,3 @@ dependencies = [
     "uvicorn>=0.38.0",
     "xgboost>=3.1.1",
 ]
-
-[tool.uv.sources]
-matplotlib = { index = "no-binary" }
-contourpy = { index = "no-binary" }

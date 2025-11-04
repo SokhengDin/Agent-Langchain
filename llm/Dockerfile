@@ -36,7 +36,7 @@ ENV PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
 COPY pyproject.toml README.md ./
 
 RUN uv pip install --system --no-cache torch==2.3.1 torchvision==0.18.1 torchaudio==2.3.1
-RUN uv pip install --system --no-cache .
+RUN uv pip install --system --no-cache --no-binary matplotlib --no-binary contourpy .
 
 COPY . .
 
