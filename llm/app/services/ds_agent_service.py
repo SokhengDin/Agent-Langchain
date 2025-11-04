@@ -135,7 +135,6 @@ class DSAgentService:
             result = await self.agent.ainvoke(
                 state
                 , config    = config
-                , context   = {"thread_id": thread_id}
             )
 
             response = result["messages"][-1].content if result["messages"] else "No response generated"
@@ -178,7 +177,6 @@ class DSAgentService:
             async for stream_mode, chunk in self.agent.astream(
                 state
                 , config        = config
-                , context       = {"thread_id": thread_id}
                 , stream_mode   = ["messages", "updates"]
             ):
                 if stream_mode == "messages":
