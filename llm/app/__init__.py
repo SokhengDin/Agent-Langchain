@@ -34,11 +34,13 @@ async def init_langgraph_db():
 
     db_uri = get_db_uri()
 
-    _checkpointer = AsyncPostgresSaver.from_conn_string(db_uri)
+    checkpointer_cm = AsyncPostgresSaver.from_conn_string(db_uri)
+    _checkpointer = await checkpointer_cm.__aenter__()
     await _checkpointer.setup()
     logger.info("LangGraph checkpointer initialized")
 
-    _store = AsyncPostgresStore.from_conn_string(db_uri)
+    store_cm = AsyncPostgresStore.from_conn_string(db_uri)
+    _store = await store_cm.__aenter__()
     await _store.setup()
     logger.info("LangGraph store initialized")
 
