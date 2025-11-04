@@ -34,6 +34,8 @@ export default function ChatContainer() {
     const viewportRef = useRef(null);
     const scrollTimeoutRef = useRef(null);
     const isAutoScrollingRef = useRef(false);
+    const userScrolledAwayRef = useRef(false);
+    const lastScrollTopRef = useRef(0);
 
     // Store the last user message for retry functionality
     useEffect(() => {
@@ -59,32 +61,37 @@ export default function ChatContainer() {
         }
     };
 
-    const scrollToBottom = () => {
+    const scrollToBottom = (smooth = false) => {
         if (viewportRef.current) {
             isAutoScrollingRef.current = true;
-            // Use smooth scroll with requestAnimationFrame for better performance
+            const scrollBehavior = smooth ? 'smooth' : 'instant';
+
             viewportRef.current.scrollTo({
                 top: viewportRef.current.scrollHeight,
-                behavior: 'smooth'
+                behavior: scrollBehavior
             });
-            // Reset flag after scroll animation completes
+
+            // Reset flag after a shorter delay for instant scroll
+            const delay = smooth ? 300 : 100;
             setTimeout(() => {
                 isAutoScrollingRef.current = false;
-            }, 300);
+            }, delay);
         } else {
-            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
         }
     };
 
     useEffect(() => {
-        // Debounce scroll updates during streaming to reduce jank
-        if (isScrolledToBottom) {
+        // Only auto-scroll if user hasn't manually scrolled away
+        if (isScrolledToBottom && !userScrolledAwayRef.current) {
             if (scrollTimeoutRef.current) {
                 clearTimeout(scrollTimeoutRef.current);
             }
+
+            // Use instant scroll during streaming for better UX
             scrollTimeoutRef.current = setTimeout(() => {
-                scrollToBottom();
-            }, 50); // Small delay to batch updates
+                scrollToBottom(false); // instant scroll, no smooth animation
+            }, 100); // Increased delay to reduce frequency
         }
 
         return () => {
@@ -108,8 +115,25 @@ export default function ChatContainer() {
                     }
 
                     const { scrollTop, scrollHeight, clientHeight } = scrollArea;
-                    // Use smaller threshold (10px) to be more precise
-                    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 10;
+
+                    // Detect if user is scrolling up (away from bottom)
+                    const scrollingUp = scrollTop < lastScrollTopRef.current;
+                    lastScrollTopRef.current = scrollTop;
+
+                    // Use larger threshold (50px) to be more forgiving
+                    const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
+                    const isAtBottom = distanceFromBottom <= 50;
+
+                    // If user scrolls up significantly, mark them as having scrolled away
+                    if (scrollingUp && distanceFromBottom > 100) {
+                        userScrolledAwayRef.current = true;
+                    }
+
+                    // If user scrolls back to bottom, reset the flag
+                    if (isAtBottom) {
+                        userScrolledAwayRef.current = false;
+                    }
+
                     setIsScrolledToBottom(isAtBottom);
                 };
 
@@ -182,7 +206,10 @@ export default function ChatContainer() {
                         {!isScrolledToBottom && messages.length > 0 && (
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
                                 <button
-                                    onClick={scrollToBottom}
+                                    onClick={() => {
+                                        userScrolledAwayRef.current = false;
+                                        scrollToBottom(true);
+                                    }}
                                     className={cn(
                                         "flex items-center gap-2 px-3 py-2 rounded-full",
                                         "bg-primary/90 text-primary-foreground text-sm font-medium",
