@@ -33,9 +33,10 @@ export default function ChatContainer() {
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
     const viewportRef = useRef(null);
     const scrollTimeoutRef = useRef(null);
-    const isAutoScrollingRef = useRef(false);
+    const rafIdRef = useRef(null);
     const userScrolledAwayRef = useRef(false);
     const lastScrollTopRef = useRef(0);
+    const lastScrollHeightRef = useRef(0);
 
     // Store the last user message for retry functionality
     useEffect(() => {
@@ -62,37 +63,50 @@ export default function ChatContainer() {
     };
 
     const scrollToBottom = (smooth = false) => {
-        if (viewportRef.current) {
-            isAutoScrollingRef.current = true;
-            const scrollBehavior = smooth ? 'smooth' : 'instant';
+        if (!viewportRef.current) return;
 
-            viewportRef.current.scrollTo({
-                top: viewportRef.current.scrollHeight,
-                behavior: scrollBehavior
+        // Cancel any pending animation frame
+        if (rafIdRef.current) {
+            cancelAnimationFrame(rafIdRef.current);
+        }
+
+        const viewport = viewportRef.current;
+        const targetScroll = viewport.scrollHeight - viewport.clientHeight;
+
+        if (smooth) {
+            // Smooth scroll for manual clicks
+            viewport.scrollTo({
+                top: targetScroll,
+                behavior: 'smooth'
             });
-
-            // Reset flag after a shorter delay for instant scroll
-            const delay = smooth ? 300 : 100;
-            setTimeout(() => {
-                isAutoScrollingRef.current = false;
-            }, delay);
         } else {
-            messagesEndRef.current?.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'end' });
+            // Instant scroll for auto-follow during streaming
+            rafIdRef.current = requestAnimationFrame(() => {
+                viewport.scrollTop = targetScroll;
+                lastScrollHeightRef.current = viewport.scrollHeight;
+            });
         }
     };
 
     useEffect(() => {
         // Only auto-scroll if user hasn't manually scrolled away
-        if (isScrolledToBottom && !userScrolledAwayRef.current) {
-            if (scrollTimeoutRef.current) {
-                clearTimeout(scrollTimeoutRef.current);
-            }
+        if (!isScrolledToBottom || userScrolledAwayRef.current) return;
 
-            // Use instant scroll during streaming for better UX
-            scrollTimeoutRef.current = setTimeout(() => {
-                scrollToBottom(false); // instant scroll, no smooth animation
-            }, 100); // Increased delay to reduce frequency
+        if (scrollTimeoutRef.current) {
+            clearTimeout(scrollTimeoutRef.current);
         }
+
+        // Debounce scroll updates
+        scrollTimeoutRef.current = setTimeout(() => {
+            if (viewportRef.current) {
+                const { scrollHeight } = viewportRef.current;
+
+                // Only scroll if content actually changed
+                if (scrollHeight !== lastScrollHeightRef.current) {
+                    scrollToBottom(false);
+                }
+            }
+        }, 150); // Larger delay to reduce frequency
 
         return () => {
             if (scrollTimeoutRef.current) {
@@ -108,37 +122,46 @@ export default function ChatContainer() {
             if (scrollArea) {
                 viewportRef.current = scrollArea;
 
-                const handleScroll = () => {
-                    // Ignore scroll events during auto-scrolling to prevent oscillation
-                    if (isAutoScrollingRef.current) {
-                        return;
-                    }
+                let scrollEndTimer = null;
 
+                const handleScroll = () => {
                     const { scrollTop, scrollHeight, clientHeight } = scrollArea;
 
-                    // Detect if user is scrolling up (away from bottom)
+                    // Clear any existing timer
+                    if (scrollEndTimer) {
+                        clearTimeout(scrollEndTimer);
+                    }
+
+                    // Detect scroll direction
                     const scrollingUp = scrollTop < lastScrollTopRef.current;
                     lastScrollTopRef.current = scrollTop;
 
-                    // Use larger threshold (50px) to be more forgiving
+                    // Calculate distance from bottom
                     const distanceFromBottom = scrollHeight - scrollTop - clientHeight;
                     const isAtBottom = distanceFromBottom <= 50;
 
-                    // If user scrolls up significantly, mark them as having scrolled away
-                    if (scrollingUp && distanceFromBottom > 100) {
+                    // User intentionally scrolled up
+                    if (scrollingUp && distanceFromBottom > 150) {
                         userScrolledAwayRef.current = true;
                     }
 
-                    // If user scrolls back to bottom, reset the flag
+                    // User scrolled back to bottom
                     if (isAtBottom) {
                         userScrolledAwayRef.current = false;
                     }
 
-                    setIsScrolledToBottom(isAtBottom);
+                    // Only update state after scrolling has stopped for a bit
+                    scrollEndTimer = setTimeout(() => {
+                        setIsScrolledToBottom(isAtBottom);
+                    }, 100);
                 };
 
-                scrollArea.addEventListener('scroll', handleScroll);
-                return () => scrollArea.removeEventListener('scroll', handleScroll);
+                scrollArea.addEventListener('scroll', handleScroll, { passive: true });
+                return () => {
+                    scrollArea.removeEventListener('scroll', handleScroll);
+                    if (scrollEndTimer) clearTimeout(scrollEndTimer);
+                };
+
             }
         };
 

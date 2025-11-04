@@ -15,7 +15,6 @@ from app.tools.ds.rag_tools import DSRAGTools
 from app.tools.ds.vision_tools import DSVisionTools
 from app.tools.ds.theoretical_tools import TheoreticalTools
 from app.tools.ds.code_execution_tools import CodeExecutionTools
-from app.tools.ds.code_expert_tool import CodeExpertTools
 from app.tools.ds.notebook_tools import NotebookTools
 
 from app.states.ds_agent_state import DSAgentState
@@ -42,9 +41,7 @@ class DSAgentService:
         # Note: Conversation memory is handled by PostgreSQL checkpointer
 
         self.tools = [
-            CodeExpertTools.code_expert
-
-            , DataTools.read_csv
+            DataTools.read_csv
             , DataTools.read_excel
             , DataTools.get_column_info
 
