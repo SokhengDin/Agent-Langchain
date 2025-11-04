@@ -33,6 +33,7 @@ RUN if [ "$USER_ID" != "0" ]; then \
     fi
 
 # Install uv (Python package manager) as root
+ENV TMPDIR=/tmp
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
 
