@@ -20,10 +20,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Set environment variables for matplotlib to prevent shared object mapping issues
+# Set environment variables for matplotlib 
+ENV TMPDIR=/app/temp
 ENV MPLBACKEND=Agg
 ENV MPLCONFIGDIR=/app/.matplotlib
-RUN mkdir -p /app/.matplotlib && chmod 777 /app/.matplotlib
+ENV XDG_CACHE_HOME=/app/.cache
+RUN mkdir -p /app/.matplotlib /app/.cache /app/temp && chmod -R 777 /app/.matplotlib /app/.cache /app/temp
+
 
 # Create a non-root user with the specified UID/GID
 RUN if [ "$USER_ID" != "0" ]; then \

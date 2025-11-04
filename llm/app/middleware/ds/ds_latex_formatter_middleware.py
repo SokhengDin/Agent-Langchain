@@ -55,7 +55,7 @@ class DSLaTeXFormatterMiddleware(AgentMiddleware):
             if stripped.startswith('[') and stripped.endswith(']') and len(stripped) > 2:
                 math_content = stripped[1:-1].strip()
                 if self._is_likely_math(math_content):
-                    if i > 0 and formatted_lines[-1].strip():
+                    if i > 0 and formatted_lines and formatted_lines[-1].strip():
                         formatted_lines.append('')
                     formatted_lines.append('$$')
                     formatted_lines.append(math_content)
@@ -65,7 +65,31 @@ class DSLaTeXFormatterMiddleware(AgentMiddleware):
                 else:
                     formatted_lines.append(line)
 
-            elif '\\[' in line and '\\]' in line:
+            elif stripped.startswith('[') and not stripped.endswith(']'):
+                math_content = stripped[1:].strip()
+                j = i + 1
+                while j < len(lines):
+                    next_stripped = lines[j].strip()
+                    if next_stripped.endswith(']'):
+                        math_content += ' ' + next_stripped[:-1].strip()
+                        break
+                    else:
+                        math_content += ' ' + next_stripped
+                    j += 1
+
+                if self._is_likely_math(math_content):
+                    if i > 0 and formatted_lines and formatted_lines[-1].strip():
+                        formatted_lines.append('')
+                    formatted_lines.append('$$')
+                    formatted_lines.append(math_content)
+                    formatted_lines.append('$$')
+                    if j < len(lines) - 1:
+                        formatted_lines.append('')
+                    i = j
+                else:
+                    formatted_lines.append(line)
+
+            elif '\\[' in line or '\\]' in line:
                 formatted_line = re.sub(
                     r'\\\[(.*?)\\\]',
                     lambda m: '\n$$\n' + m.group(1).strip() + '\n$$\n',
@@ -74,7 +98,7 @@ class DSLaTeXFormatterMiddleware(AgentMiddleware):
                 )
                 formatted_lines.append(formatted_line.strip())
 
-            elif '\\(' in line and '\\)' in line:
+            elif '\\(' in line or '\\)' in line:
                 formatted_line = re.sub(
                     r'\\\((.*?)\\\)',
                     r'$\1$',
@@ -101,7 +125,8 @@ class DSLaTeXFormatterMiddleware(AgentMiddleware):
             'alpha', 'beta', 'gamma', 'delta', 'epsilon', 'theta',
             'lambda', 'mu', 'sigma', 'omega', 'pi', 'mathbf',
             'times', 'cdot', 'pm', 'leq', 'geq', 'neq', 'equiv',
-            'begin{', 'end{', 'displaystyle', '^', '_', '&'
+            'begin{', 'end{', 'displaystyle', '^', '_', '&',
+            'mathbb', 'operatorname', 'Sigma', 'mid', 'Cov'
         ]
 
         return any(indicator in content for indicator in math_indicators)

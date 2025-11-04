@@ -79,6 +79,10 @@ services:
       - LANGGRAPH_DB_USER=${LANGGRAPH_DB_USER}
       - LANGGRAPH_DB_PASS=${LANGGRAPH_DB_PASS}
       - PORT=8005
+      - MPLBACKEND=Agg
+      - MPLCONFIGDIR=/app/.matplotlib
+      - XDG_CACHE_HOME=/app/.cache
+      - TMPDIR=/app/temp
     ports:
       - "8005:8005"
     volumes:
