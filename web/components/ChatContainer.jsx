@@ -29,17 +29,69 @@ export default function ChatContainer() {
         activeAgent === 'ds-agent' ? dsChat : hotelChat;
 
     const messagesEndRef = useRef(null);
+    const lastUserMessageRef = useRef(null);
     const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
     const viewportRef = useRef(null);
+    const scrollTimeoutRef = useRef(null);
+    const isAutoScrollingRef = useRef(false);
 
-    const scrollToBottom    = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth'});
+    // Store the last user message for retry functionality
+    useEffect(() => {
+        const lastUserMsg = messages.filter(m => m.sender === 'user').pop();
+        if (lastUserMsg) {
+            lastUserMessageRef.current = lastUserMsg;
+        }
+    }, [messages]);
+
+    const handleRetry = () => {
+        if (lastUserMessageRef.current && !isLoading) {
+            // Extract content and attachments from the last user message
+            const { content, attachments } = lastUserMessageRef.current;
+
+            // Clean the content by removing the attachment paths that were appended
+            let cleanContent = content;
+            if (attachments && attachments.length > 0) {
+                // Remove the appended image/pdf paths from content
+                cleanContent = content.split('\n\n')[0];
+            }
+
+            sendMessage(cleanContent, attachments || []);
+        }
+    };
+
+    const scrollToBottom = () => {
+        if (viewportRef.current) {
+            isAutoScrollingRef.current = true;
+            // Use smooth scroll with requestAnimationFrame for better performance
+            viewportRef.current.scrollTo({
+                top: viewportRef.current.scrollHeight,
+                behavior: 'smooth'
+            });
+            // Reset flag after scroll animation completes
+            setTimeout(() => {
+                isAutoScrollingRef.current = false;
+            }, 300);
+        } else {
+            messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+        }
     };
 
     useEffect(() => {
+        // Debounce scroll updates during streaming to reduce jank
         if (isScrolledToBottom) {
-            scrollToBottom();
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+            scrollTimeoutRef.current = setTimeout(() => {
+                scrollToBottom();
+            }, 50); // Small delay to batch updates
         }
+
+        return () => {
+            if (scrollTimeoutRef.current) {
+                clearTimeout(scrollTimeoutRef.current);
+            }
+        };
     }, [messages, agentStatus, isScrolledToBottom]);
 
     useEffect(() => {
@@ -50,8 +102,14 @@ export default function ChatContainer() {
                 viewportRef.current = scrollArea;
 
                 const handleScroll = () => {
+                    // Ignore scroll events during auto-scrolling to prevent oscillation
+                    if (isAutoScrollingRef.current) {
+                        return;
+                    }
+
                     const { scrollTop, scrollHeight, clientHeight } = scrollArea;
-                    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 50;
+                    // Use smaller threshold (10px) to be more precise
+                    const isAtBottom = scrollHeight - scrollTop <= clientHeight + 10;
                     setIsScrolledToBottom(isAtBottom);
                 };
 
@@ -66,10 +124,10 @@ export default function ChatContainer() {
     }, []);
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-[1600px] mx-auto px-0 sm:px-4 lg:px-6">
             <Card className={cn(
                 "flex flex-col overflow-hidden",
-                "h-[90vh] min-h-[700px] max-h-[1200px]",
+                "h-[calc(100vh-2rem)] sm:h-[calc(100vh-4rem)] min-h-[600px]",
                 "bg-card/95 backdrop-blur-sm border-border/50",
                 "shadow-2xl shadow-black/10",
                 "transition-all duration-300 ease-in-out",
@@ -109,12 +167,18 @@ export default function ChatContainer() {
                 <div className="flex-1 flex flex-col min-h-0 relative z-10">
                     <div className="flex-1 relative overflow-hidden">
                         <ScrollArea className="h-full w-full">
-                            <div className="px-6 sm:px-8 md:px-12 py-6 sm:py-8">
-                                <ChatMessages messages={messages} isLoading={isLoading} agentStatus={agentStatus} thinkingContent={thinkingContent} />
+                            <div className="px-3 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-8">
+                                <ChatMessages
+                                    messages={messages}
+                                    isLoading={isLoading}
+                                    agentStatus={agentStatus}
+                                    thinkingContent={thinkingContent}
+                                    onRetry={handleRetry}
+                                />
                                 <div ref={messagesEndRef} />
                             </div>
                         </ScrollArea>
-                        
+
                         {!isScrolledToBottom && messages.length > 0 && (
                             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20">
                                 <button

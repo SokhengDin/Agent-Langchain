@@ -120,7 +120,7 @@ export default function ChatInput({ onSendMessage, disabled }) {
     const canSubmit = (hasMessage || attachments.length > 0) && !disabled && !isUploading;
 
     return (
-        <div className="p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+        <div className="p-3 sm:p-4 border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
             {/* Hidden file input */}
             <input
                 ref={fileInputRef}

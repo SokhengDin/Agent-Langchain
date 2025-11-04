@@ -187,6 +187,15 @@
   }
 }
 
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 .animate-in {
   animation-fill-mode: both;
 }
@@ -197,6 +206,60 @@
 
 .duration-300 {
   animation-duration: 300ms;
+}
+
+.duration-500 {
+  animation-duration: 500ms;
+}
+
+.ease-out {
+  animation-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Smooth scroll behavior */
+.scroll-area [data-radix-scroll-area-viewport] {
+  scroll-behavior: smooth;
+  will-change: scroll-position;
+}
+
+.smooth-scroll {
+  scroll-behavior: smooth;
+}
+
+/* Smooth thinking text animation */
+.thinking-text {
+  animation: text-appear 0.3s ease-out;
+  transition: all 0.2s ease-out;
+}
+
+@keyframes text-appear {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smoother cursor blink */
+@keyframes cursor-blink {
+  0%, 49% {
+    opacity: 1;
+  }
+  50%, 100% {
+    opacity: 0;
+  }
+}
+
+.cursor-blink {
+  animation: cursor-blink 1s ease-in-out infinite;
+}
+
+/* Fade in animation */
+.fade-in {
+  animation-name: fade-in;
 }
 
 /* Shiki code block styling */
@@ -221,14 +284,49 @@
 /* KaTeX math styling */
 .katex {
   font-size: 1em;
+  line-height: 1.2;
 }
 
 .katex-display {
   margin: 1rem 0;
   overflow-x: auto;
   overflow-y: hidden;
+  padding: 0.5rem 0;
 }
 
 .katex-display > .katex {
   text-align: center;
+  display: block;
+}
+
+/* Ensure KaTeX works well within prose */
+.prose .katex,
+.prose .katex-display {
+  max-width: 100%;
+}
+
+.prose .katex-display {
+  margin: 1em 0;
+}
+
+/* Handle inline math in prose */
+.prose p .katex {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 0 0.1em;
+}
+
+/* Override prose code styling to not interfere with inline math */
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::before,
+.prose :where(code):not(:where([class~="not-prose"],[class~="not-prose"] *))::after {
+  content: none !important;
+}
+
+/* Handle KaTeX errors gracefully */
+.katex-error {
+  color: hsl(var(--destructive));
+  background: hsl(var(--destructive) / 0.1);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
 }

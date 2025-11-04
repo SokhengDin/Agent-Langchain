@@ -4,7 +4,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bot, User, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkMath from 'remark-math';
@@ -14,6 +14,133 @@ import AgentStatus from './AgentStatus';
 import 'katex/dist/katex.min.css';
 import ThinkingIndicator from './ThinkingIndicator';
 import { FileText, Image as ImageIcon } from 'lucide-react';
+// @ts-ignore - KaTeX auto-render types not available
+import renderMathInElement from 'katex/dist/contrib/auto-render.mjs';
+
+/**
+ * KaTeX Configuration with all supported delimiters
+ *
+ * RENDERING ARCHITECTURE:
+ * This component uses a two-stage hybrid approach for complete delimiter support:
+ *
+ * STAGE 1 - Markdown Processing (remark-math + rehype-katex):
+ *   - remark-math: Identifies $...$ and $$...$$ in markdown source
+ *   - rehype-katex: Renders these to KaTeX HTML during markdown→HTML conversion
+ *   - Advantage: Math content protected from markdown transformations
+ *
+ * STAGE 2 - DOM Post-Processing (auto-render extension):
+ *   - Scans final rendered HTML for remaining delimiters
+ *   - Catches \(...\), \[...\], and LaTeX environment delimiters
+ *   - Advantage: Supports full LaTeX syntax not handled by remark-math
+ *
+ * Supported Math Delimiters:
+ *
+ * INLINE MATH:
+ * - $x^2$                    → x² (via remark-math + rehype-katex)
+ * - \(x^2\)                  → x² (via auto-render)
+ *
+ * DISPLAY MATH (centered, block-level):
+ * - $$x^2$$                  → Centered equation (via remark-math + rehype-katex)
+ * - \[x^2\]                  → Centered equation (via auto-render)
+ *
+ * LATEX ENVIRONMENTS (via auto-render):
+ * - \begin{equation}...\end{equation}           → Numbered equation
+ * - \begin{equation*}...\end{equation*}         → Unnumbered equation
+ * - \begin{align}...\end{align}                 → Multi-line aligned equations
+ * - \begin{align*}...\end{align*}               → Multi-line aligned (no numbers)
+ * - \begin{alignat}...\end{alignat}             → Aligned equations with custom spacing
+ * - \begin{alignat*}...\end{alignat*}           → Alignat unnumbered
+ * - \begin{gather}...\end{gather}               → Multiple centered equations
+ * - \begin{gather*}...\end{gather*}             → Gather unnumbered
+ * - \begin{CD}...\end{CD}                       → Commutative diagrams
+ * - \begin{multline}...\end{multline}           → Multi-line equations
+ * - \begin{multline*}...\end{multline*}         → Multline unnumbered
+ *
+ * NOTES:
+ * - $$ is processed before $ to avoid conflicts
+ * - Code blocks and pre tags are automatically ignored by auto-render
+ * - Elements with class "no-math" are skipped
+ * - Errors are logged but don't break rendering (throwOnError: false)
+ */
+const KATEX_OPTIONS = {
+    delimiters: [
+        // Display math (processed first to avoid conflicts)
+        { left: '$$', right: '$$', display: true },
+        { left: '\\[', right: '\\]', display: true },
+
+        // Inline math
+        { left: '$', right: '$', display: false },
+        { left: '\\(', right: '\\)', display: false },
+
+        // LaTeX environments
+        { left: '\\begin{equation}', right: '\\end{equation}', display: true },
+        { left: '\\begin{equation*}', right: '\\end{equation*}', display: true },
+        { left: '\\begin{align}', right: '\\end{align}', display: true },
+        { left: '\\begin{align*}', right: '\\end{align*}', display: true },
+        { left: '\\begin{alignat}', right: '\\end{alignat}', display: true },
+        { left: '\\begin{alignat*}', right: '\\end{alignat*}', display: true },
+        { left: '\\begin{gather}', right: '\\end{gather}', display: true },
+        { left: '\\begin{gather*}', right: '\\end{gather*}', display: true },
+        { left: '\\begin{CD}', right: '\\end{CD}', display: true },
+        { left: '\\begin{multline}', right: '\\end{multline}', display: true },
+        { left: '\\begin{multline*}', right: '\\end{multline*}', display: true },
+    ],
+    // Ignore code blocks and other elements where math shouldn't be rendered
+    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code', 'option'],
+    // Ignore elements with these classes
+    ignoredClasses: ['no-math'],
+    // Don't throw on errors, just log them
+    throwOnError: false,
+    // Error callback for debugging
+    errorCallback: (msg, err) => {
+        console.error('KaTeX rendering error:', msg, err);
+    },
+    // Preprocess to handle any escaped characters
+    preProcess: (text) => {
+        // Ensure backslashes are properly preserved
+        return text;
+    },
+};
+
+/**
+ * Custom hook to apply KaTeX auto-render to element content
+ * Runs after ReactMarkdown has finished rendering
+ */
+function useKatexAutoRender(contentRef, content) {
+    useEffect(() => {
+        if (contentRef.current && content) {
+            // Use requestAnimationFrame to ensure ReactMarkdown has fully rendered
+            const rafId = requestAnimationFrame(() => {
+                try {
+                    // Apply KaTeX auto-render to catch delimiters not handled by remark-math
+                    // This handles \(...\), \[...\], and LaTeX environments
+                    renderMathInElement(contentRef.current, KATEX_OPTIONS);
+                } catch (error) {
+                    console.error('KaTeX auto-render failed:', error);
+                }
+            });
+
+            return () => cancelAnimationFrame(rafId);
+        }
+    }, [content]); // Re-run when content changes
+}
+
+/**
+ * Code Component - handles both inline code and code blocks
+ */
+function CodeComponent({ children, className, inline, ...props }) {
+    // Inline code - simple rendering
+    if (inline) {
+        return (
+            <code className='bg-muted px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all' {...props}>
+                {children}
+            </code>
+        );
+    }
+
+    // Code block - with syntax highlighting
+    return <CodeBlock className={className} {...props}>{children}</CodeBlock>;
+}
 
 /**
  * Code Block Component with Shiki highlighting
@@ -52,15 +179,6 @@ function CodeBlock({ children, className, ...props }) {
             console.error('Failed to copy:', err);
         }
     };
-
-    // Inline code
-    if (!language) {
-        return (
-            <code className='bg-muted px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all' {...props}>
-                {children}
-            </code>
-        );
-    }
 
     // Code block with Shiki
     if (highlightedHtml) {
@@ -116,10 +234,14 @@ function CodeBlock({ children, className, ...props }) {
     );
 }
 
-function MessageBubble({ message }) {
+function MessageBubble({ message, onRetry }) {
     const [mounted, setMounted] = useState(false);
     const isUser    = message.sender === 'user';
     const isError   = message.isError;
+    const contentRef = useRef(null);
+
+    // Apply KaTeX auto-render to bot messages
+    useKatexAutoRender(contentRef, !isUser ? message.content : null);
 
     useEffect(() => {
         setMounted(true);
@@ -127,10 +249,10 @@ function MessageBubble({ message }) {
 
     return (
         <div className={cn(
-            "flex gap-2 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-300",
+            "flex gap-2 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-500 ease-out",
             isUser ? "flex-row-reverse" : "flex-row"
         )}>
-            <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mt-1 ring-2 ring-background shadow-sm flex-shrink-0">
+            <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mt-1 ring-2 ring-background shadow-sm flex-shrink-0 transition-transform duration-300">
                 {isUser ? (
                     <>
                         <AvatarImage src="/user-avatar.png" alt="User" />
@@ -149,7 +271,7 @@ function MessageBubble({ message }) {
             </Avatar>
 
             <div className={cn(
-                "flex flex-col max-w-[85%] sm:max-w-[80%] md:max-w-[75%] min-w-0",
+                "flex flex-col max-w-[85%] sm:max-w-[85%] md:max-w-[88%] lg:max-w-[92%] min-w-0",
                 isUser ? "items-end" : "items-start"
             )}>
                 <Card className={cn(
@@ -184,19 +306,52 @@ function MessageBubble({ message }) {
                                 ))}
                             </div>
                         )}
-                        {isUser ? (
+                        {isError ? (
+                            <div className="space-y-2">
+                                <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words text-destructive'>
+                                    {message.content}
+                                </p>
+                                {onRetry && (
+                                    <button
+                                        onClick={onRetry}
+                                        className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-destructive bg-destructive/10 hover:bg-destructive/20 rounded-md transition-colors duration-200"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                        </svg>
+                                        Try Again
+                                    </button>
+                                )}
+                            </div>
+                        ) : isUser ? (
                             <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words'>{message.content}</p>
                         ) : (
-                            <div className='text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert min-w-0'>
+                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert min-w-0 [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0'>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm, remarkMath]}
                                     rehypePlugins={[rehypeKatex]}
+                                    unwrapDisallowed={true}
+                                    disallowedElements={[]}
                                     components={{
-                                        p: ({node, ...props}) => <p className='mb-2 last:mb-0 break-words' {...props} />,
+                                        // Regular components - use div for p to avoid nesting issues with code blocks
+                                        p: ({node, children, ...props}) => {
+                                            // Check if children contain code blocks or code elements
+                                            const hasBlockElement = node?.children?.some(
+                                                child => child.type === 'element' &&
+                                                (child.tagName === 'pre' || child.tagName === 'code')
+                                            );
+                                            // Use div if there's a block element to avoid invalid HTML nesting
+                                            return hasBlockElement ? (
+                                                <div className='mb-2 last:mb-0 break-words' {...props}>{children}</div>
+                                            ) : (
+                                                <p className='mb-2 last:mb-0 break-words' {...props}>{children}</p>
+                                            );
+                                        },
                                         ul: ({node, ...props}) => <ul className='mb-2 ml-3 sm:ml-4 list-disc' {...props} />,
                                         ol: ({node, ...props}) => <ol className='mb-2 ml-3 sm:ml-4 list-decimal' {...props} />,
                                         li: ({node, ...props}) => <li className='mb-1 break-words' {...props} />,
-                                        code: CodeBlock,
+                                        pre: ({node, ...props}) => <pre className='my-2' {...props} />,
+                                        code: CodeComponent,
                                         h1: ({node, ...props}) => <h1 className='text-base sm:text-lg font-bold mb-2 mt-4 first:mt-0 break-words' {...props} />,
                                         h2: ({node, ...props}) => <h2 className='text-sm sm:text-base font-bold mb-2 mt-3 first:mt-0 break-words' {...props} />,
                                         h3: ({node, ...props}) => <h3 className='text-xs sm:text-sm font-bold mb-1 mt-2 first:mt-0 break-words' {...props} />,
@@ -249,7 +404,7 @@ function TypingIndicator() {
     );
 }
 
-export default function ChatMessages({ messages, isLoading, agentStatus, thinkingContent }) {
+export default function ChatMessages({ messages, isLoading, agentStatus, thinkingContent, onRetry }) {
     // Check if there's a streaming message
     const hasStreamingMessage = messages.some(msg => msg.isStreaming);
 
@@ -262,7 +417,7 @@ export default function ChatMessages({ messages, isLoading, agentStatus, thinkin
     return (
         <div className='space-y-1'>
             {messages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
+                <MessageBubble key={message.id} message={message} onRetry={message.isError ? onRetry : undefined} />
             ))}
             {isThinking ? (
                 <ThinkingIndicator thinkingContent={thinkingContent} />

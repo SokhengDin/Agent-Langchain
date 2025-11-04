@@ -3,10 +3,11 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
 import { Bot, Brain, Sparkles } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export default function ThinkingIndicator({ thinkingContent }) {
     const [dots, setDots] = useState('');
+    const contentRef = useRef(null);
 
     // Animate the dots
     useEffect(() => {
@@ -15,6 +16,18 @@ export default function ThinkingIndicator({ thinkingContent }) {
         }, 500);
         return () => clearInterval(interval);
     }, []);
+
+    // Auto-scroll to bottom when content updates
+    useEffect(() => {
+        if (contentRef.current && thinkingContent) {
+            // Small delay to ensure content is rendered
+            requestAnimationFrame(() => {
+                if (contentRef.current) {
+                    contentRef.current.scrollTop = contentRef.current.scrollHeight;
+                }
+            });
+        }
+    }, [thinkingContent]);
 
     return (
         <div className="flex gap-2 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-300">
@@ -40,11 +53,14 @@ export default function ThinkingIndicator({ thinkingContent }) {
 
                             {/* Thinking Content - shown if available */}
                             {thinkingContent && (
-                                <div className="mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-primary/10">
-                                    <div className="text-[11px] sm:text-xs text-muted-foreground italic font-mono bg-background/50 rounded px-1.5 sm:px-2 py-1 sm:py-1.5 max-h-24 sm:max-h-32 overflow-y-auto break-words">
+                                <div className="mt-1.5 sm:mt-2 pt-1.5 sm:pt-2 border-t border-primary/10 animate-in fade-in duration-300">
+                                    <div
+                                        ref={contentRef}
+                                        className="text-[11px] sm:text-xs text-muted-foreground italic font-mono bg-background/50 rounded px-1.5 sm:px-2 py-1 sm:py-1.5 max-h-24 sm:max-h-32 overflow-y-auto break-words smooth-scroll"
+                                    >
                                         <span className="opacity-70">&quot;</span>
-                                        <span className="text-foreground/70">{thinkingContent}</span>
-                                        <span className="inline-block w-1 h-2.5 sm:h-3 bg-primary/60 animate-pulse ml-0.5"></span>
+                                        <span className="text-foreground/70 thinking-text">{thinkingContent}</span>
+                                        <span className="inline-block w-1 h-2.5 sm:h-3 bg-primary/60 ml-0.5 cursor-blink"></span>
                                         <span className="opacity-70">&quot;</span>
                                     </div>
                                 </div>

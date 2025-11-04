@@ -39,7 +39,12 @@ export default function ChatHeader({ activeAgent = 'ds-agent' }) {
                         </AvatarFallback>
                     </Avatar>
                     <div>
-                        <h3 className='font-semibold text-sm sm:text-lg'>{config.title}</h3>
+                        <div className='flex items-center gap-2'>
+                            <h3 className='font-semibold text-sm sm:text-lg'>{config.title}</h3>
+                            <span className='text-[9px] sm:text-[10px] text-muted-foreground/60 hidden sm:inline'>
+                                • {t('footer.developedBy')}
+                            </span>
+                        </div>
                         <div className='flex items-center space-x-2'>
                             <Circle className='h-2 w-2 fill-green-500 text-green-500' />
                             <span className='text-xs sm:text-sm text-muted-foreground'>Online</span>
