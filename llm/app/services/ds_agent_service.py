@@ -4,6 +4,7 @@ from pathlib import Path
 
 from langchain_core.messages import HumanMessage
 from langchain_ollama import ChatOllama
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from langchain.agents import create_agent
 
@@ -29,12 +30,11 @@ from app.middleware.ds.ds_code_execution_middleware import handle_code_execution
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
-from app import logger, get_checkpointer
+from app import logger
 
 class DSAgentService:
-    """Data Science Agent Service for educational assistance"""
 
-    def __init__(self):
+    def __init__(self, checkpointer: AsyncPostgresSaver):
         output_dir = Path("output")
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -105,7 +105,7 @@ class DSAgentService:
                 , self.prompt_middleware
             ]
             , state_schema  = DSAgentState
-            , checkpointer  = get_checkpointer()
+            , checkpointer  = checkpointer
         )
 
     async def handle_conversation(

@@ -1,20 +1,25 @@
-from typing import Optional, AsyncGenerator, List
-from fastapi import APIRouter, HTTPException, status
+from typing import Optional, AsyncGenerator, List, Annotated
+from fastapi import APIRouter, HTTPException, status, Depends
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
 import json
 
+from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+
 from app.services.ds_agent_service import DSAgentService
+from app.api.deps.checkpointer_deps import get_checkpointer
 from app import logger
 
 router = APIRouter()
 
 _ds_agent_service = None
 
-def get_ds_agent_service() -> DSAgentService:
+async def get_ds_agent_service(
+    checkpointer: Annotated[AsyncPostgresSaver, Depends(get_checkpointer)]
+) -> DSAgentService:
     global _ds_agent_service
     if _ds_agent_service is None:
-        _ds_agent_service = DSAgentService()
+        _ds_agent_service = DSAgentService(checkpointer)
     return _ds_agent_service
 
 class DSChatRequest(BaseModel):
@@ -27,7 +32,10 @@ class DSChatResponse(BaseModel):
     thread_id   : str               = Field(..., description="Thread ID for this conversation")
 
 @router.post("/chat", response_model=DSChatResponse, status_code=status.HTTP_200_OK)
-async def chat(request: DSChatRequest) -> DSChatResponse:
+async def chat(
+    request: DSChatRequest,
+    service: Annotated[DSAgentService, Depends(get_ds_agent_service)]
+) -> DSChatResponse:
     """
     Chat with data science agent
 
@@ -44,7 +52,7 @@ async def chat(request: DSChatRequest) -> DSChatResponse:
     }
     """
     try:
-        result = await get_ds_agent_service().handle_conversation(
+        result = await service.handle_conversation(
             message         = request.message
             , thread_id     = request.thread_id
             , uploaded_files= request.uploaded_files
@@ -63,7 +71,10 @@ async def chat(request: DSChatRequest) -> DSChatResponse:
         )
 
 @router.post("/chat/stream")
-async def chat_stream(request: DSChatRequest):
+async def chat_stream(
+    request: DSChatRequest,
+    service: Annotated[DSAgentService, Depends(get_ds_agent_service)]
+):
     """
     Stream chat with data science agent
 
@@ -84,7 +95,7 @@ async def chat_stream(request: DSChatRequest):
     """
     async def event_generator() -> AsyncGenerator[str, None]:
         try:
-            async for event in get_ds_agent_service().handle_conversation_stream(
+            async for event in service.handle_conversation_stream(
                 message         = request.message
                 , thread_id     = request.thread_id
                 , uploaded_files= request.uploaded_files
