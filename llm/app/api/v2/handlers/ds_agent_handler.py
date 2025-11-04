@@ -1,4 +1,4 @@
-from typing import Optional, AsyncGenerator
+from typing import Optional, AsyncGenerator, List
 from fastapi import APIRouter, HTTPException, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel, Field
@@ -12,8 +12,9 @@ router = APIRouter()
 ds_agent_service = DSAgentService()
 
 class DSChatRequest(BaseModel):
-    message     : str               = Field(..., description="Student's question or request")
-    thread_id   : Optional[str]     = Field(None, description="Thread ID for conversation continuity")
+    message         : str               = Field(..., description="Student's question or request")
+    thread_id       : Optional[str]     = Field(None, description="Thread ID for conversation continuity")
+    uploaded_files  : Optional[List[str]] = Field(None, description="List of uploaded file paths")
 
 class DSChatResponse(BaseModel):
     response    : str               = Field(..., description="Agent's response")
@@ -38,8 +39,9 @@ async def chat(request: DSChatRequest) -> DSChatResponse:
     """
     try:
         result = await ds_agent_service.handle_conversation(
-            message     = request.message
-            , thread_id = request.thread_id
+            message         = request.message
+            , thread_id     = request.thread_id
+            , uploaded_files= request.uploaded_files
         )
 
         return DSChatResponse(
@@ -77,8 +79,9 @@ async def chat_stream(request: DSChatRequest):
     async def event_generator() -> AsyncGenerator[str, None]:
         try:
             async for event in ds_agent_service.handle_conversation_stream(
-                message     = request.message
-                , thread_id = request.thread_id
+                message         = request.message
+                , thread_id     = request.thread_id
+                , uploaded_files= request.uploaded_files
             ):
                 yield f"data: {json.dumps(event)}\n\n"
 

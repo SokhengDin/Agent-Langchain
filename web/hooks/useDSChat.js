@@ -36,21 +36,9 @@ export function useDSChat() {
     }, [t]);
 
     const sendMessage = async (content, attachments = []) => {
-        // Format message with attachments if present
-        let messageContent = content;
-        if (attachments.length > 0) {
-            attachments.forEach(att => {
-                if (att.type.startsWith('image/')) {
-                    messageContent += `\n\nImage: ${att.path}`;
-                } else if (att.type === 'application/pdf') {
-                    messageContent += `\n\nPDF: ${att.path}`;
-                }
-            });
-        }
-
         const userMessage = {
             id: Date.now(),
-            content: messageContent,
+            content: content,
             sender: 'user',
             timestamp: new Date().toISOString(),
             attachments: attachments.length > 0 ? attachments : undefined,
@@ -65,19 +53,13 @@ export function useDSChat() {
         try {
             // Prepare request body
             const requestBody = {
-                message: messageContent,
+                message: content,
                 thread_id: threadId,
             };
 
-            // Add file paths if attachments exist
+            // Add uploaded files array if attachments exist
             if (attachments.length > 0) {
-                attachments.forEach(att => {
-                    if (att.type.startsWith('image/')) {
-                        requestBody.image_path = att.path;
-                    } else if (att.type === 'application/pdf') {
-                        requestBody.pdf_path = att.path;
-                    }
-                });
+                requestBody.uploaded_files = attachments.map(att => att.path);
             }
 
             const response = await fetch('/api/v2/ds-agent/chat/stream', {

@@ -3,11 +3,9 @@ from uuid import uuid4
 from pathlib import Path
 
 from langchain_core.messages import HumanMessage
-from langchain_ollama import ChatOllama, OllamaEmbeddings
-from langchain_chroma import Chroma
+from langchain_ollama import ChatOllama
 
 from langchain.agents import create_agent
-from langgraph.checkpoint.memory import InMemorySaver
 
 from app.tools.ds.data_tools import DataTools
 from app.tools.ds.stats_tools import StatsTools
@@ -17,12 +15,11 @@ from app.tools.ds.rag_tools import DSRAGTools
 from app.tools.ds.vision_tools import DSVisionTools
 from app.tools.ds.theoretical_tools import TheoreticalTools
 from app.tools.ds.code_execution_tools import CodeExecutionTools
+from app.tools.ds.code_expert_tool import CodeExpertTools
 
 from app.states.ds_agent_state import DSAgentState
-from app.services.ds_memory_service import DSMemoryService
 from app.prompts.ds_prompt import DSPrompt
 
-from app.middleware.ds.ds_memory_middleware import DSMemoryMiddleware
 from app.middleware.ds.ds_context_middleware import DSContextMiddleware
 from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
@@ -31,7 +28,7 @@ from app.middleware.ds.ds_code_execution_middleware import handle_code_execution
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
-from app import logger
+from app import logger, get_checkpointer_sync
 
 class DSAgentService:
     """Data Science Agent Service for educational assistance"""
@@ -40,56 +37,40 @@ class DSAgentService:
         output_dir = Path("output")
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        self.embeddings = OllamaEmbeddings(
-            base_url    = settings.OLLAMA_BASE_URL
-            , model     = "llama3.1"
-        )
-
-        self.memory_store = Chroma(
-            collection_name         = "ds_memories"
-            , embedding_function    = self.embeddings
-            , persist_directory     = str(output_dir / "ds_chromadb")
-        )
-
-        self.memory_service = DSMemoryService(self.memory_store)
+        # Note: Conversation memory is handled by PostgreSQL checkpointer
+        # No need for separate ChromaDB memory store
 
         self.tools = [
-            # Data tools
-            DataTools.read_csv
+            CodeExpertTools.code_expert
+
+            , DataTools.read_csv
             , DataTools.read_excel
             , DataTools.get_column_info
 
-            # Statistics tools
             , StatsTools.correlation_analysis
             , StatsTools.hypothesis_test
             , StatsTools.distribution_analysis
 
-            # Visualization tools
             , VizTools.create_histogram
             , VizTools.create_scatter_plot
             , VizTools.create_correlation_heatmap
             , VizTools.create_box_plot
 
-            # ML tools
             , MLTools.train_linear_regression
             , MLTools.train_random_forest
             , MLTools.make_prediction
 
-            # RAG tools
             , DSRAGTools.process_pdf_document
             , DSRAGTools.search_document_content
             , DSRAGTools.extract_pdf_text
 
-            # Vision tools
             , DSVisionTools.analyze_exercise_image
             , DSVisionTools.extract_math_equations
             , DSVisionTools.analyze_graph_chart
 
-            # Theoretical distribution tools
             , TheoreticalTools.plot_normal_distribution
             , TheoreticalTools.plot_distribution
 
-            # Code execution tools
             , CodeExecutionTools.execute_python_code
         ]
 
@@ -104,7 +85,6 @@ class DSAgentService:
 
         self.prompt = DSPrompt.prompt_agent()
 
-        self.memory_middleware          = DSMemoryMiddleware(self.memory_service)
         self.context_middleware         = DSContextMiddleware()
         self.tool_context_middleware    = DSToolContextMiddleware()
         self.prompt_middleware          = create_ds_dynamic_prompt(self.prompt)
@@ -114,7 +94,6 @@ class DSAgentService:
             , tools         = self.tools
             , middleware    = [
                 self.context_middleware
-                , self.memory_middleware
                 , self.tool_context_middleware
                 # , notify_context_limit_middleware
                 # , trim_messages_middleware
@@ -123,13 +102,14 @@ class DSAgentService:
                 , self.prompt_middleware
             ]
             , state_schema  = DSAgentState
-            , checkpointer  = InMemorySaver()
+            , checkpointer  = get_checkpointer_sync()  # Use PostgreSQL checkpointer from app init
         )
 
     async def handle_conversation(
         self
-        , message   : str
-        , thread_id : str = None
+        , message           : str
+        , thread_id         : str = None
+        , uploaded_files    : list[str] = None
     ) -> Dict[str, Any]:
         """Handle conversation with DS agent"""
         try:
@@ -138,16 +118,20 @@ class DSAgentService:
             thread_id = thread_id if thread_id else str(uuid4())
 
             state = {
-                "messages"          : [HumanMessage(content=message)]
-                , "dataset_id"      : None
-                , "thread_id"       : thread_id
-                , "recall_memories" : []
-                , "current_tool"    : None
-                , "uploaded_files"  : []
-                , "current_dataframe": None
-                , "context"         : {}
-                , "api_base_url"    : settings.FRONT_API_BASE_URL
+                "messages"              : [HumanMessage(content=message)]
+                , "dataset_id"          : None
+                , "thread_id"           : thread_id
+                , "current_tool"        : None
+                , "uploaded_files"      : uploaded_files or []
+                , "current_dataframe"   : None
+                , "context"             : {}
+                , "api_base_url"        : settings.FRONT_API_BASE_URL
+                , "code_execution_count": 0
             }
+
+            if uploaded_files:
+                file_list = "\n".join([f"- {f}" for f in uploaded_files])
+                state["messages"][0].content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
             result = await self.agent.ainvoke(
                 state
@@ -168,23 +152,28 @@ class DSAgentService:
 
     async def handle_conversation_stream(
         self
-        , message   : str
-        , thread_id : str = None
+        , message           : str
+        , thread_id         : str = None
+        , uploaded_files    : list[str] = None
     ):
         try:
             thread_id = thread_id if thread_id else str(uuid4())
 
             state = {
-                "messages"          : [HumanMessage(content=message)]
-                , "dataset_id"      : None
-                , "thread_id"       : thread_id
-                , "recall_memories" : []
-                , "current_tool"    : None
-                , "uploaded_files"  : []
-                , "current_dataframe": None
-                , "context"         : {}
-                , "api_base_url"    : settings.FRONT_API_BASE_URL
+                "messages"              : [HumanMessage(content=message)]
+                , "dataset_id"          : None
+                , "thread_id"           : thread_id
+                , "current_tool"        : None
+                , "uploaded_files"      : uploaded_files or []
+                , "current_dataframe"   : None
+                , "context"             : {}
+                , "api_base_url"        : settings.FRONT_API_BASE_URL
+                , "code_execution_count": 0
             }
+
+            if uploaded_files:
+                file_list = "\n".join([f"- {f}" for f in uploaded_files])
+                state["messages"][0].content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
             yield {
                 "type"      : "start"
