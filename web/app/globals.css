@@ -269,6 +269,14 @@
   font-size: 0.75rem;
   line-height: 1.5;
   overflow-x: auto;
+  max-width: 100%;
+}
+
+@media (max-width: 640px) {
+  .shiki {
+    padding: 0.75rem !important;
+    font-size: 0.6875rem;
+  }
 }
 
 .shiki code {
@@ -279,6 +287,12 @@
 .shiki .line {
   display: inline-block;
   min-height: 1rem;
+}
+
+/* Text wrapping utilities for mobile */
+.overflow-wrap-anywhere {
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }
 
 /* KaTeX math styling */
@@ -314,6 +328,31 @@
   display: inline-block;
   vertical-align: middle;
   margin: 0 0.1em;
+}
+
+/* Mobile-specific prose improvements */
+@media (max-width: 640px) {
+  .prose {
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+
+  .prose pre {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+
+  .prose table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .prose img {
+    max-width: 100%;
+    height: auto;
+  }
 }
 
 /* Override prose code styling to not interfere with inline math */

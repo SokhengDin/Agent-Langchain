@@ -12,7 +12,7 @@ export default function Home() {
         <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30">
           <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
 
-          <div className="relative container mx-auto pt-4 sm:pt-8 pb-2 sm:pb-4 px-0 sm:px-4">
+          <div className="relative container mx-auto pt-4 sm:pt-8 pb-2 sm:pb-4 px-2 sm:px-4">
             <ChatContainer />
           </div>
 

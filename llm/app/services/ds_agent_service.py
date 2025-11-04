@@ -117,25 +117,37 @@ class DSAgentService:
 
             thread_id = thread_id if thread_id else str(uuid4())
 
-            state = {
-                "messages"              : [HumanMessage(content=message)]
-                , "dataset_id"          : None
-                , "thread_id"           : thread_id
-                , "current_tool"        : None
-                , "uploaded_files"      : uploaded_files or []
-                , "current_dataframe"   : None
-                , "context"             : {}
-                , "api_base_url"        : settings.FRONT_API_BASE_URL
-                , "code_execution_count": 0
-            }
-
+            message_content = message
             if uploaded_files:
                 file_list = "\n".join([f"- {f}" for f in uploaded_files])
-                state["messages"][0].content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
+                message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
+
+            config = {"configurable": {"thread_id": thread_id}}
+
+            current_state = self.agent.get_state(config)
+
+            state = {
+                "messages": [HumanMessage(content=message_content)]
+            }
+
+            if not current_state.values:
+                state.update({
+                    "dataset_id"            : None
+                    , "thread_id"           : thread_id
+                    , "current_tool"        : None
+                    , "uploaded_files"      : uploaded_files or []
+                    , "current_dataframe"   : None
+                    , "context"             : {}
+                    , "api_base_url"        : settings.FRONT_API_BASE_URL
+                    , "code_execution_count": 0
+                })
+            else:
+                if uploaded_files:
+                    state["uploaded_files"] = uploaded_files
 
             result = await self.agent.ainvoke(
                 state
-                , config    = {"configurable": {"thread_id": thread_id}}
+                , config    = config
                 , context   = {"thread_id": thread_id}
             )
 
@@ -159,21 +171,33 @@ class DSAgentService:
         try:
             thread_id = thread_id if thread_id else str(uuid4())
 
-            state = {
-                "messages"              : [HumanMessage(content=message)]
-                , "dataset_id"          : None
-                , "thread_id"           : thread_id
-                , "current_tool"        : None
-                , "uploaded_files"      : uploaded_files or []
-                , "current_dataframe"   : None
-                , "context"             : {}
-                , "api_base_url"        : settings.FRONT_API_BASE_URL
-                , "code_execution_count": 0
-            }
-
+            message_content = message
             if uploaded_files:
                 file_list = "\n".join([f"- {f}" for f in uploaded_files])
-                state["messages"][0].content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
+                message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
+
+            config = {"configurable": {"thread_id": thread_id}}
+
+            current_state = self.agent.get_state(config)
+
+            state = {
+                "messages": [HumanMessage(content=message_content)]
+            }
+
+            if not current_state.values:
+                state.update({
+                    "dataset_id"            : None
+                    , "thread_id"           : thread_id
+                    , "current_tool"        : None
+                    , "uploaded_files"      : uploaded_files or []
+                    , "current_dataframe"   : None
+                    , "context"             : {}
+                    , "api_base_url"        : settings.FRONT_API_BASE_URL
+                    , "code_execution_count": 0
+                })
+            else:
+                if uploaded_files:
+                    state["uploaded_files"] = uploaded_files
 
             yield {
                 "type"      : "start"
@@ -182,7 +206,7 @@ class DSAgentService:
 
             async for stream_mode, chunk in self.agent.astream(
                 state
-                , config        = {"configurable": {"thread_id": thread_id}}
+                , config        = config
                 , context       = {"thread_id": thread_id}
                 , stream_mode   = ["messages", "updates"]
             ):

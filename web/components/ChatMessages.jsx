@@ -249,7 +249,7 @@ function MessageBubble({ message, onRetry }) {
 
     return (
         <div className={cn(
-            "flex gap-2 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-500 ease-out",
+            "flex gap-1.5 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-500 ease-out",
             isUser ? "flex-row-reverse" : "flex-row"
         )}>
             <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mt-1 ring-2 ring-background shadow-sm flex-shrink-0 transition-transform duration-300">
@@ -271,18 +271,18 @@ function MessageBubble({ message, onRetry }) {
             </Avatar>
 
             <div className={cn(
-                "flex flex-col max-w-[85%] sm:max-w-[85%] md:max-w-[88%] lg:max-w-[92%] min-w-0",
+                "flex flex-col max-w-[calc(100%-2.5rem)] sm:max-w-[85%] md:max-w-[88%] lg:max-w-[92%] min-w-0",
                 isUser ? "items-end" : "items-start"
             )}>
                 <Card className={cn(
-                    "inline-block shadow-sm border-0 w-full sm:w-auto",
+                    "inline-block shadow-sm border-0 w-full sm:w-auto overflow-hidden",
                     isUser
                     ? "bg-primary text-primary-foreground"
                     : isError
                         ? "bg-destructive/10 border-destructive/20"
                         : "bg-muted/80"
                 )}>
-                    <CardContent className="p-2.5 sm:p-3">
+                    <CardContent className="p-2.5 sm:p-3 min-w-0">
                         {/* Show attachments if present */}
                         {message.attachments && message.attachments.length > 0 && (
                             <div className="mb-2 space-y-1.5 sm:space-y-2">
@@ -324,9 +324,9 @@ function MessageBubble({ message, onRetry }) {
                                 )}
                             </div>
                         ) : isUser ? (
-                            <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words'>{message.content}</p>
+                            <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words overflow-wrap-anywhere'>{message.content}</p>
                         ) : (
-                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert min-w-0 [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0'>
+                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm max-w-none dark:prose-invert min-w-0 overflow-hidden [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0'>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm, remarkMath]}
                                     rehypePlugins={[rehypeKatex]}

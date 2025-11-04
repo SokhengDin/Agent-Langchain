@@ -124,7 +124,7 @@ export default function ChatContainer() {
     }, []);
 
     return (
-        <div className="w-full max-w-[1600px] mx-auto px-0 sm:px-4 lg:px-6">
+        <div className="w-full max-w-[1600px] mx-auto px-1 sm:px-4 lg:px-6">
             <Card className={cn(
                 "flex flex-col overflow-hidden",
                 "h-[calc(100vh-2rem)] sm:h-[calc(100vh-4rem)] min-h-[600px]",
@@ -167,7 +167,7 @@ export default function ChatContainer() {
                 <div className="flex-1 flex flex-col min-h-0 relative z-10">
                     <div className="flex-1 relative overflow-hidden">
                         <ScrollArea className="h-full w-full">
-                            <div className="px-3 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-8">
+                            <div className="px-2 sm:px-6 md:px-8 lg:px-10 py-4 sm:py-8">
                                 <ChatMessages
                                     messages={messages}
                                     isLoading={isLoading}
