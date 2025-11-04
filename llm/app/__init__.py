@@ -66,9 +66,11 @@ async def cleanup_langgraph_db():
     _store = None
 
 
-def get_checkpointer_sync():
+def get_checkpointer():
+    """Get the async PostgreSQL checkpointer instance."""
     return _checkpointer
 
 
-def get_store_sync():
+def get_store():
+    """Get the async PostgreSQL store instance."""
     return _store

@@ -20,6 +20,7 @@ from app.tools.ds.code_expert_tool import CodeExpertTools
 from app.states.ds_agent_state import DSAgentState
 from app.prompts.ds_prompt import DSPrompt
 
+from app.middleware.ds.ds_state_init_middleware import DSStateInitMiddleware
 from app.middleware.ds.ds_context_middleware import DSContextMiddleware
 from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
@@ -28,7 +29,7 @@ from app.middleware.ds.ds_code_execution_middleware import handle_code_execution
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
-from app import logger, get_checkpointer_sync
+from app import logger, get_checkpointer
 
 class DSAgentService:
     """Data Science Agent Service for educational assistance"""
@@ -85,6 +86,7 @@ class DSAgentService:
 
         self.prompt = DSPrompt.prompt_agent()
 
+        self.state_init_middleware      = DSStateInitMiddleware()
         self.context_middleware         = DSContextMiddleware()
         self.tool_context_middleware    = DSToolContextMiddleware()
         self.prompt_middleware          = create_ds_dynamic_prompt(self.prompt)
@@ -93,7 +95,8 @@ class DSAgentService:
             model           = self.llm
             , tools         = self.tools
             , middleware    = [
-                self.context_middleware
+                self.state_init_middleware
+                , self.context_middleware
                 , self.tool_context_middleware
                 # , notify_context_limit_middleware
                 # , trim_messages_middleware
@@ -102,7 +105,7 @@ class DSAgentService:
                 , self.prompt_middleware
             ]
             , state_schema  = DSAgentState
-            , checkpointer  = get_checkpointer_sync()  # Use PostgreSQL checkpointer from app init
+            , checkpointer  = get_checkpointer()
         )
 
     async def handle_conversation(
@@ -124,26 +127,10 @@ class DSAgentService:
 
             config = {"configurable": {"thread_id": thread_id}}
 
-            current_state = await self.agent.aget_state(config)
+            state = {"messages": [HumanMessage(content=message_content)]}
 
-            state = {
-                "messages": [HumanMessage(content=message_content)]
-            }
-
-            if not current_state.values:
-                state.update({
-                    "dataset_id"            : None
-                    , "thread_id"           : thread_id
-                    , "current_tool"        : None
-                    , "uploaded_files"      : uploaded_files or []
-                    , "current_dataframe"   : None
-                    , "context"             : {}
-                    , "api_base_url"        : settings.FRONT_API_BASE_URL
-                    , "code_execution_count": 0
-                })
-            else:
-                if uploaded_files:
-                    state["uploaded_files"] = uploaded_files
+            if uploaded_files:
+                state["uploaded_files"] = uploaded_files
 
             result = await self.agent.ainvoke(
                 state
@@ -173,31 +160,15 @@ class DSAgentService:
 
             message_content = message
             if uploaded_files:
-                file_list = "\n".join([f"- {f}" for f in uploaded_files])
+                file_list   = "\n".join([f"- {f}" for f in uploaded_files])
                 message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
-            config = {"configurable": {"thread_id": thread_id}}
+            config  = {"configurable": {"thread_id": thread_id}}
 
-            current_state = await self.agent.aget_state(config)
+            state   = {"messages": [HumanMessage(content=message_content)]}
 
-            state = {
-                "messages": [HumanMessage(content=message_content)]
-            }
-
-            if not current_state.values:
-                state.update({
-                    "dataset_id"            : None
-                    , "thread_id"           : thread_id
-                    , "current_tool"        : None
-                    , "uploaded_files"      : uploaded_files or []
-                    , "current_dataframe"   : None
-                    , "context"             : {}
-                    , "api_base_url"        : settings.FRONT_API_BASE_URL
-                    , "code_execution_count": 0
-                })
-            else:
-                if uploaded_files:
-                    state["uploaded_files"] = uploaded_files
+            if uploaded_files:
+                state["uploaded_files"] = uploaded_files
 
             yield {
                 "type"      : "start"
