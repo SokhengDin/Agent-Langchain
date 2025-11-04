@@ -16,6 +16,7 @@ from app.tools.ds.vision_tools import DSVisionTools
 from app.tools.ds.theoretical_tools import TheoreticalTools
 from app.tools.ds.code_execution_tools import CodeExecutionTools
 from app.tools.ds.code_expert_tool import CodeExpertTools
+from app.tools.ds.notebook_tools import NotebookTools
 
 from app.states.ds_agent_state import DSAgentState
 from app.prompts.ds_prompt import DSPrompt
@@ -74,6 +75,9 @@ class DSAgentService:
             , TheoreticalTools.plot_distribution
 
             , CodeExecutionTools.execute_python_code
+
+            , NotebookTools.generate_notebook
+            , NotebookTools.create_analysis_notebook
         ]
 
         self.llm = ChatOllama(
