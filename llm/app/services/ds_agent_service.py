@@ -124,7 +124,7 @@ class DSAgentService:
 
             config = {"configurable": {"thread_id": thread_id}}
 
-            current_state = self.agent.get_state(config)
+            current_state = await self.agent.aget_state(config)
 
             state = {
                 "messages": [HumanMessage(content=message_content)]
@@ -178,7 +178,7 @@ class DSAgentService:
 
             config = {"configurable": {"thread_id": thread_id}}
 
-            current_state = self.agent.get_state(config)
+            current_state = await self.agent.aget_state(config)
 
             state = {
                 "messages": [HumanMessage(content=message_content)]
