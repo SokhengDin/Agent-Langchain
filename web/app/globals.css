@@ -316,6 +316,8 @@
 .overflow-wrap-anywhere {
   overflow-wrap: anywhere;
   word-break: break-word;
+  max-width: 100%;
+  display: block;
 }
 
 /* KaTeX math styling */
@@ -353,28 +355,49 @@
   margin: 0 0.1em;
 }
 
+/* Prose text wrapping - apply to all screen sizes */
+.prose {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.prose p, .prose li, .prose div {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
+}
+
+.prose pre {
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.prose table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+}
+
 /* Mobile-specific prose improvements */
 @media (max-width: 640px) {
   .prose {
-    overflow-wrap: anywhere;
-    word-break: break-word;
+    font-size: 0.875rem;
   }
 
   .prose pre {
-    max-width: 100%;
-    overflow-x: auto;
+    font-size: 0.75rem;
   }
 
-  .prose table {
-    display: block;
-    max-width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .prose img {
-    max-width: 100%;
-    height: auto;
+  .prose code {
+    font-size: 0.8125rem;
   }
 }
 
