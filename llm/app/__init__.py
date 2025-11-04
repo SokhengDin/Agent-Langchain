@@ -31,18 +31,16 @@ def get_vector_db_connection_string() -> str:
 
 async def init_langgraph_db():
     global _checkpointer, _store
-    
+
     db_uri = get_db_uri()
-    
-    async with AsyncPostgresSaver.from_conn_string(db_uri) as checkpointer:
-        await checkpointer.setup()
-        _checkpointer = checkpointer
-        logger.info("LangGraph checkpointer initialized")
-    
-    async with AsyncPostgresStore.from_conn_string(db_uri) as store:
-        await store.setup()
-        _store = store
-        logger.info("LangGraph store initialized")
+
+    _checkpointer = AsyncPostgresSaver.from_conn_string(db_uri)
+    await _checkpointer.setup()
+    logger.info("LangGraph checkpointer initialized")
+
+    _store = AsyncPostgresStore.from_conn_string(db_uri)
+    await _store.setup()
+    logger.info("LangGraph store initialized")
 
 
 async def cleanup_langgraph_db():
