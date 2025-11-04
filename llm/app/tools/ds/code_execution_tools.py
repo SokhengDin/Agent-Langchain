@@ -9,6 +9,7 @@ import ast
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from pydantic import BaseModel, Field
 
 from langchain_core.tools import tool
 from langchain.tools import ToolRuntime
@@ -25,6 +26,27 @@ MAX_EXECUTIONS_PER_CONVERSATION = 10
 
 class TimeoutException(Exception):
     pass
+
+
+class CodeExecutionInput(BaseModel):
+    """Input schema for Python code execution with strict requirements."""
+
+    code: str = Field(
+        description=(
+            "Python code to execute. "
+            "CRITICAL: Use raw strings (r'...' or r\"...\") for ALL strings containing backslashes. "
+            "Examples: "
+            "plt.title(r'$\\mu$') NOT plt.title('$\\mu$'). "
+            "ax.plot(x, y, label=r'$\\sigma=0.2$') NOT label='$\\sigma=0.2$'. "
+            "Matplotlib labels, titles, text with LaTeX symbols MUST use raw strings. "
+            "Without raw strings, the tool call will fail with JSON parsing errors."
+        )
+    )
+
+    save_plot: bool = Field(
+        default=True,
+        description="Whether to automatically save matplotlib plots and return their URL"
+    )
 
 
 class CodeExecutionTools:
@@ -83,90 +105,20 @@ class CodeExecutionTools:
             logger.warning(f"Could not set memory limit: {e}")
 
     @staticmethod
-    @tool("execute_python_code")
+    @tool("execute_python_code", args_schema=CodeExecutionInput)
     async def execute_python_code(
         code        : str
         , save_plot : bool = True
         , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict[str, Any]:
         """
-        Execute Python code safely with timeout and resource limits.
-        Supports mathematical and scientific computations with pre-imported libraries.
+        Execute Python code with pre-imported scientific libraries (numpy, pandas, matplotlib, scipy, sympy).
 
-        ⚠️ SECURITY RESTRICTIONS:
-        - Maximum execution time: 30 seconds
-        - Maximum memory usage: 512 MB
-        - No system commands, file operations, or network access
-        - No eval(), exec(), or dynamic imports
-        - Limited to 10 executions per conversation
+        Pre-imported: np, pd, plt, matplotlib, scipy, stats, sns, sympy, math, random
+        Automatically saves and returns URLs for matplotlib plots.
+        Max execution: 30s, 512MB memory, 10 calls per conversation.
 
-        ✅ PRE-IMPORTED LIBRARIES (use directly):
-        - np (numpy): Numerical computing
-        - pd (pandas): Data manipulation (use for reading CSV/Excel files)
-        - plt, matplotlib: Static plotting and visualization
-        - animation, FuncAnimation: Matplotlib animations
-        - go, px (plotly): Interactive plots (if installed)
-        - scipy, stats: Scientific computing and statistics
-        - seaborn, sns: Statistical data visualization
-        - sympy: Symbolic mathematics
-        - math: Basic math functions
-        - random: Random number generation
-        - itertools, functools, collections: Python utilities
-        - datetime, time: Date and time handling
-        - re: Regular expressions
-
-        📊 PLOTTING & ANIMATIONS:
-        Static (Matplotlib):
-        - plt.figure(), plt.plot(), plt.scatter(), etc.
-        - Animations: anim.save('filename.gif', writer='pillow', fps=30)
-
-        Interactive (Plotly):
-        - fig = px.scatter(df, x='col1', y='col2')
-        - fig = go.Figure(data=[go.Bar(x=x, y=y)])
-        - Save: fig.write_html('output/plots/filename.html')
-        - Auto-generates shareable URL for HTML files
-
-        Args:
-            code        : Python code to execute (string)
-            save_plot   : Whether to save matplotlib plots (default: True)
-
-        Returns:
-            Dict with status, message, and data containing:
-            - stdout: Standard output from code execution
-            - stderr: Standard error from code execution
-            - plot_path: Local path to saved plot (if any)
-            - file_url: Public URL to access plot (if any)
-            - execution_count: Number of executions in this conversation
-            - error: Error message (if execution failed)
-            - traceback: Full error traceback (if execution failed)
-
-        Example:
-            ```python
-            result = 2 + 2
-            print(f"Result: {result}")
-            ```
-
-            ```python
-            x = np.linspace(0, 2*np.pi, 100)
-            y = np.sin(x)
-            plt.plot(x, y)
-            plt.title(r"Sine Wave")
-            plt.xlabel(r"x")
-            plt.ylabel(r"sin(x)")
-            plt.grid(True)
-            ```
-
-            CRITICAL: When using LaTeX in strings, you MUST use raw strings (r"..." or r'...'):
-            ```python
-            plt.title(r"Distribution $N(\mu, \sigma^2)$")
-            plt.xlabel(r"$x$")
-            plt.ylabel(r"$f(x)$")
-            ax.plot(x, y, label=r"$\mu=0.5, \sigma=0.2$")
-            ```
-
-            WITHOUT raw strings (r prefix), backslashes will cause JSON parsing errors.
-            WRONG: plt.title("$\mu$")  # FAILS - \m is invalid
-            RIGHT: plt.title(r"$\mu$")  # WORKS - raw string
+        Security: No system commands, file ops, network access, or dangerous functions.
         """
         try:
             if runtime and runtime.stream_writer:
