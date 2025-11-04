@@ -112,9 +112,9 @@ class CodeExecutionTools:
         , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict[str, Any]:
         """
-        Execute Python code with pre-imported scientific libraries (numpy, pandas, matplotlib, scipy, sympy).
+        Execute Python code with pre-imported scientific libraries.
 
-        Pre-imported: np, pd, plt, matplotlib, scipy, stats, sns, sympy, math, random
+        Pre-imported: np, pd, pl (polars), plt, matplotlib, scipy, stats, sns, sympy, sklearn, xgb, lgb, sm (statsmodels), math, random
         Automatically saves and returns URLs for matplotlib plots.
         Max execution: 30s, 512MB memory, 10 calls per conversation.
 
@@ -178,9 +178,44 @@ class CodeExecutionTools:
 
             matplotlib.use('Agg', force=True)
 
+            try:
+                sklearn = __import__('sklearn')
+            except ImportError:
+                sklearn = None
+
+            try:
+                xgboost = __import__('xgboost')
+                xgb = xgboost
+            except ImportError:
+                xgboost = None
+                xgb = None
+
+            try:
+                lightgbm = __import__('lightgbm')
+                lgb = lightgbm
+            except ImportError:
+                lightgbm = None
+                lgb = None
+
+            try:
+                statsmodels = __import__('statsmodels')
+                import statsmodels.api as sm_api
+            except ImportError:
+                statsmodels = None
+                sm_api = None
+
+            try:
+                polars = __import__('polars')
+                pl = polars
+            except ImportError:
+                polars = None
+                pl = None
+
             local_vars = {
                 'np'            : __import__('numpy')
                 , 'pd'          : __import__('pandas')
+                , 'pl'          : pl
+                , 'polars'      : polars
                 , 'plt'         : plt
                 , 'matplotlib'  : matplotlib
                 , 'animation'   : mpl_animation
@@ -192,6 +227,13 @@ class CodeExecutionTools:
                 , 'seaborn'     : __import__('seaborn')
                 , 'sns'         : __import__('seaborn')
                 , 'sympy'       : __import__('sympy')
+                , 'sklearn'     : sklearn
+                , 'xgboost'     : xgboost
+                , 'xgb'         : xgb
+                , 'lightgbm'    : lightgbm
+                , 'lgb'         : lgb
+                , 'statsmodels' : statsmodels
+                , 'sm'          : sm_api
                 , 'math'        : __import__('math')
                 , 'random'      : __import__('random')
                 , 'itertools'   : __import__('itertools')
@@ -316,7 +358,9 @@ class CodeExecutionTools:
             return result
 
         except Exception as e:
+            error_traceback = traceback.format_exc()
             logger.error(f"Error in code execution tool: {str(e)}")
+            logger.error(f"Traceback: {error_traceback}")
 
             if runtime and runtime.stream_writer:
                 runtime.stream_writer(f"💥 Tool error: {str(e)}")
@@ -324,5 +368,8 @@ class CodeExecutionTools:
             return {
                 "status"    : 500
                 , "message" : f"Tool error: {str(e)}"
-                , "data"    : None
+                , "data"    : {
+                    "error"     : str(e)
+                    , "traceback": error_traceback
+                }
             }

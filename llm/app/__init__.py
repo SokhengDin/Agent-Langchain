@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
+from langgraph.checkpoint.postgres import PostgresSaver
 from langgraph.store.postgres import AsyncPostgresStore
 
 from app.core.logger import setup_logging
@@ -34,9 +34,10 @@ async def init_langgraph_db():
 
     db_uri = get_db_uri()
 
-    checkpointer_cm = AsyncPostgresSaver.from_conn_string(db_uri)
-    _checkpointer = await checkpointer_cm.__aenter__()
-    await _checkpointer.setup()
+    # Use synchronous PostgresSaver for create_agent compatibility
+    checkpointer_cm = PostgresSaver.from_conn_string(db_uri)
+    _checkpointer = checkpointer_cm.__enter__()
+    _checkpointer.setup()
     logger.info("LangGraph checkpointer initialized")
 
     store_cm = AsyncPostgresStore.from_conn_string(db_uri)
@@ -47,21 +48,22 @@ async def init_langgraph_db():
 
 async def cleanup_langgraph_db():
     global _checkpointer, _store
-    
+
     if _checkpointer:
         try:
-            await _checkpointer.aclose()
+            # Use synchronous close for PostgresSaver
+            _checkpointer.conn.close()
             logger.info("LangGraph checkpointer closed")
         except Exception as e:
             logger.error(f"Error closing checkpointer: {e}")
-    
+
     if _store:
         try:
             await _store.aclose()
             logger.info("LangGraph store closed")
         except Exception as e:
             logger.error(f"Error closing store: {e}")
-    
+
     _checkpointer = None
     _store = None
 

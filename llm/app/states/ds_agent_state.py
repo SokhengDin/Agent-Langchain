@@ -18,3 +18,4 @@ class DSAgentState(TypedDict):
     api_base_url            : NotRequired[str]
 
     code_execution_count    : NotRequired[int]
+    code_execution_retry_count : NotRequired[int]

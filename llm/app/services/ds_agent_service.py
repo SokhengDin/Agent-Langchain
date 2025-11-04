@@ -125,7 +125,10 @@ class DSAgentService:
                 file_list = "\n".join([f"- {f}" for f in uploaded_files])
                 message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
-            config = {"configurable": {"thread_id": thread_id}}
+            config = {
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": 50  # Increase from default 25 to handle complex tasks
+            }
 
             state = {"messages": [HumanMessage(content=message_content)]}
 
@@ -162,7 +165,10 @@ class DSAgentService:
                 file_list   = "\n".join([f"- {f}" for f in uploaded_files])
                 message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
-            config  = {"configurable": {"thread_id": thread_id}}
+            config  = {
+                "configurable": {"thread_id": thread_id},
+                "recursion_limit": 50  # Increase from default 25 to handle complex tasks
+            }
 
             state   = {"messages": [HumanMessage(content=message_content)]}
 

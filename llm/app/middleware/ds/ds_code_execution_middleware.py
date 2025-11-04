@@ -12,6 +12,16 @@ async def handle_code_execution_feedback(request, handler):
         return await handler(request)
 
     try:
+        state           = request.runtime.state
+        retry_count     = state.get("code_execution_retry_count", 0)
+
+        MAX_RETRIES     = 5
+        if retry_count >= MAX_RETRIES:
+            return ToolMessage(
+                content         = f"Code execution failed after {MAX_RETRIES} attempts. Please simplify your code or ask for help with a different approach."
+                , tool_call_id  = request.tool_call["id"]
+            )
+
         result          = await handler(request)
 
         if isinstance(result, ToolMessage):
@@ -21,11 +31,13 @@ async def handle_code_execution_feedback(request, handler):
                 status  = content.get("status", 200)
 
                 if status == 500:
+                    state["code_execution_retry_count"] = retry_count + 1
+
                     error_data  = content.get("data", {})
                     error_msg   = error_data.get("error", "Unknown error")
                     traceback   = error_data.get("traceback", "")
 
-                    feedback_message = f"""Code execution failed with error:
+                    feedback_message = f"""Code execution failed with error (Attempt {retry_count + 1}/{MAX_RETRIES}):
 
 Error Type: {error_msg}
 
@@ -37,7 +49,7 @@ You MUST now:
 2. Identify the exact issue (syntax error, runtime error, logic error, etc.)
 3. Fix the code based on the error message
 4. Call execute_python_code again with the corrected code
-5. Repeat until the code executes successfully (maximum 5 attempts)
+5. You have {MAX_RETRIES - retry_count - 1} attempts remaining
 
 Common fixes:
 - SyntaxError: Check for missing parentheses, brackets, quotes, colons, or indentation
@@ -55,6 +67,8 @@ Do NOT give up. Fix the error and retry now."""
                         content         = feedback_message
                         , tool_call_id  = request.tool_call["id"]
                     )
+                else:
+                    state["code_execution_retry_count"] = 0
 
         return result
 
