@@ -9,7 +9,13 @@ from app import logger
 
 router = APIRouter()
 
-ds_agent_service = DSAgentService()
+_ds_agent_service = None
+
+def get_ds_agent_service() -> DSAgentService:
+    global _ds_agent_service
+    if _ds_agent_service is None:
+        _ds_agent_service = DSAgentService()
+    return _ds_agent_service
 
 class DSChatRequest(BaseModel):
     message         : str               = Field(..., description="Student's question or request")
@@ -38,7 +44,7 @@ async def chat(request: DSChatRequest) -> DSChatResponse:
     }
     """
     try:
-        result = await ds_agent_service.handle_conversation(
+        result = await get_ds_agent_service().handle_conversation(
             message         = request.message
             , thread_id     = request.thread_id
             , uploaded_files= request.uploaded_files
@@ -78,7 +84,7 @@ async def chat_stream(request: DSChatRequest):
     """
     async def event_generator() -> AsyncGenerator[str, None]:
         try:
-            async for event in ds_agent_service.handle_conversation_stream(
+            async for event in get_ds_agent_service().handle_conversation_stream(
                 message         = request.message
                 , thread_id     = request.thread_id
                 , uploaded_files= request.uploaded_files
