@@ -1,5 +1,9 @@
 FROM python:3.12-slim
 
+# Accept user and group ID as build arguments
+ARG USER_ID=1000
+ARG GROUP_ID=1000
+
 WORKDIR /app
 
 # Install build dependencies and runtime libraries
@@ -16,7 +20,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
-# Install uv (Python package manager)
+# Create a non-root user with the specified UID/GID
+RUN if [ "$USER_ID" != "0" ]; then \
+        groupadd -g ${GROUP_ID} appgroup || true; \
+        useradd -m -u ${USER_ID} -g appgroup appuser || true; \
+    fi
+
+# Install uv (Python package manager) as root
 RUN curl -LsSf https://astral.sh/uv/install.sh | sh
 ENV PATH="/root/.cargo/bin:/root/.local/bin:$PATH"
 
@@ -30,8 +40,11 @@ RUN uv pip install --system --no-cache .
 # Copy application code
 COPY . .
 
-# Create logs directory
-RUN mkdir -p /app/logs
+# Create logs and output directories and set permissions
+RUN mkdir -p /app/logs /app/output /app/uploads && \
+    if [ "${USER_ID}" != "0" ]; then \
+        chown -R ${USER_ID}:${GROUP_ID} /app; \
+    fi
 
 EXPOSE 8005
 

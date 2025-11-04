@@ -15,13 +15,17 @@ services:
       - ams_network
 
   api:
-    build: 
+    build:
       context: ./api
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
+      args:
+        - USER_ID=${USER_ID:-1000}
+        - GROUP_ID=${GROUP_ID:-1000}
     container_name: hotel_agent_api
     depends_on:
       - db
     restart: unless-stopped
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     environment:
       - DB_USER=${DB_USER}
       - DB_NAME=${DB_NAME}
@@ -35,13 +39,17 @@ services:
       - ams_network
 
   llm:
-    build: 
+    build:
       context: ./llm
-      dockerfile: Dockerfile 
+      dockerfile: Dockerfile
+      args:
+        - USER_ID=${USER_ID:-1000}
+        - GROUP_ID=${GROUP_ID:-1000}
     container_name: hotel_agent_llm
     depends_on:
       - api
     restart: unless-stopped
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     environment:
       - API_BASE_URL=http://hotel_agent_api:8000
       - FRONT_API_BASE_URL=https://ams-agent.redalab.org
@@ -61,12 +69,16 @@ services:
     build:
       context: ./web
       dockerfile: Dockerfile
+      args:
+        - USER_ID=${USER_ID:-1000}
+        - GROUP_ID=${GROUP_ID:-1000}
     depends_on:
       - api
       - llm
     ports:
       - "3000:3000"
     restart: unless-stopped
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     environment:
       - NEXT_PUBLIC_API_URL=http://hotel_agent_api:8000
       - NEXT_PUBLIC_LLM_API_URL=http://hotel_agent_llm:8005
