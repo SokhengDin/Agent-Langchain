@@ -150,10 +150,18 @@ class CodeExecutionTools:
             x = np.linspace(0, 2*np.pi, 100)
             y = np.sin(x)
             plt.plot(x, y)
-            plt.title("Sine Wave")
-            plt.xlabel("x")
-            plt.ylabel("sin(x)")
+            plt.title(r"Sine Wave")
+            plt.xlabel(r"x")
+            plt.ylabel(r"sin(x)")
             plt.grid(True)
+            ```
+
+            IMPORTANT: Always use raw strings (r"...") for matplotlib labels containing LaTeX:
+            ```python
+            plt.title(r"Distribution $N(\mu, \sigma^2)$")
+            plt.xlabel(r"$x$")
+            plt.ylabel(r"$f(x)$")
+            ax.plot(x, y, label=r"$\mu=0.5, \sigma=0.2$")
             ```
         """
         try:

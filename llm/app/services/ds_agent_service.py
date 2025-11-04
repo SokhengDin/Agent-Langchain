@@ -27,7 +27,6 @@ from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
 from app.middleware.ds.ds_memory_trim_middleware import trim_messages_middleware, notify_context_limit_middleware
 from app.middleware.ds.ds_code_execution_middleware import handle_code_execution_feedback
-from app.middleware.ds.ds_latex_formatter_middleware import DSLaTeXFormatterMiddleware
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
@@ -94,7 +93,6 @@ class DSAgentService:
         self.state_init_middleware      = DSStateInitMiddleware()
         self.context_middleware         = DSContextMiddleware()
         self.tool_context_middleware    = DSToolContextMiddleware()
-        self.latex_formatter_middleware = DSLaTeXFormatterMiddleware()
         self.prompt_middleware          = create_ds_dynamic_prompt(self.prompt)
 
         self.agent = create_agent(
@@ -108,7 +106,6 @@ class DSAgentService:
                 # , trim_messages_middleware
                 , handle_code_execution_feedback
                 , handle_tool_errors
-                , self.latex_formatter_middleware
                 , self.prompt_middleware
             ]
             , state_schema  = DSAgentState
