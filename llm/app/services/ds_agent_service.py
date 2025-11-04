@@ -77,7 +77,7 @@ class DSAgentService:
 
         self.llm = ChatOllama(
             base_url    = settings.OLLAMA_BASE_URL
-            , model     = "qwen3-coder:30b"
+            , model     = "qwen3:14b"
             , temperature= 0.3
             , num_ctx   = 131072
             , reasoning = True
