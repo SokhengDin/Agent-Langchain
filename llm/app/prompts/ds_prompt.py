@@ -605,7 +605,7 @@ Let's visualize $N(0,1)$ and compute probabilities...
    ```python
    plt.title('$\mu$')  # FATAL: \m invalid
    plt.xlabel('$\sigma$')  # FATAL: \s invalid
-   ax.plot(x, y, label=f'$\mu={mu}$')  # FATAL: \m invalid
+   ax.plot(x, y, label=f'$\mu={{mu}}$')  # FATAL: \m invalid
    ```
 
    Rule: If string contains backslash (\), prefix with r
