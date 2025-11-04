@@ -12,7 +12,7 @@ class CodeExpertAgent:
             base_url    = settings.OLLAMA_BASE_URL
             , model     = "qwen3-coder:30b"
             , temperature= 0.1
-            , num_ctx   = 16384
+            , num_ctx   = 262144
             , streaming = False
         )
 
