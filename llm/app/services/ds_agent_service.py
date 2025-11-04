@@ -222,7 +222,7 @@ class DSAgentService:
 
                 elif stream_mode == "updates":
                     for step, data in chunk.items():
-                        if 'messages' in data and len(data['messages']) > 0:
+                        if data and isinstance(data, dict) and 'messages' in data and len(data['messages']) > 0:
                             last_message = data['messages'][-1]
 
                             if hasattr(last_message, 'tool_calls') and last_message.tool_calls:
