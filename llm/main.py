@@ -10,14 +10,16 @@ from app.api.v2.router import router as router_v2
 
 from app.core.config import settings
 
-from app import logger
+from app import logger, init_langgraph_db, cleanup_langgraph_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info("Starting up application...")
+    await init_langgraph_db()
     yield
     logger.info("Shutting down application...")
+    await cleanup_langgraph_db()
 
 
 app = FastAPI(lifespan=lifespan)
