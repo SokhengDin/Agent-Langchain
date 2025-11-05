@@ -1,8 +1,6 @@
 from typing import Dict, Any, Optional
 from uuid import uuid4
 from pathlib import Path
-import asyncio
-from concurrent.futures import ThreadPoolExecutor
 
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_ollama import ChatOllama
@@ -39,16 +37,6 @@ class DSAgentService:
     def __init__(self, checkpointer: AsyncPostgresSaver):
         output_dir = Path("output")
         output_dir.mkdir(parents=True, exist_ok=True)
-
-        # Configure thread pool executor to prevent thread exhaustion
-        # Limit the max number of threads that can be created for sync operations
-        self.executor   = ThreadPoolExecutor(max_workers=10, thread_name_prefix="ds_agent")
-
-        # Set the event loop's default executor
-        loop            = asyncio.get_event_loop()
-        loop.set_default_executor(self.executor)
-
-        # Note: Conversation memory is handled by PostgreSQL checkpointer
 
         self.tools = [
             DataTools.read_csv
@@ -368,8 +356,3 @@ class DSAgentService:
                 , "error": str(e)
             }
 
-    def cleanup(self):
-        """Cleanup resources including thread pool executor"""
-        if hasattr(self, 'executor'):
-            self.executor.shutdown(wait=True, cancel_futures=True)
-            logger.info("Thread pool executor shutdown successfully")
