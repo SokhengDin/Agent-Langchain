@@ -27,6 +27,10 @@ RUN apk add --no-cache \
     geos-dev \
     curl \
     shadow \
+    fontconfig \
+    ttf-dejavu \
+    ttf-liberation \
+    ttf-freefont \
     && rm -rf /var/cache/apk/*
 
 # Create a non-root user with the specified UID/GID
