@@ -1,6 +1,8 @@
 from typing import Dict, Any, Optional
 from uuid import uuid4
 from pathlib import Path
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 
 from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_ollama import ChatOllama
@@ -37,6 +39,14 @@ class DSAgentService:
     def __init__(self, checkpointer: AsyncPostgresSaver):
         output_dir = Path("output")
         output_dir.mkdir(parents=True, exist_ok=True)
+
+        # Configure thread pool executor to prevent thread exhaustion
+        # Limit the max number of threads that can be created for sync operations
+        self.executor   = ThreadPoolExecutor(max_workers=10, thread_name_prefix="ds_agent")
+
+        # Set the event loop's default executor
+        loop            = asyncio.get_event_loop()
+        loop.set_default_executor(self.executor)
 
         # Note: Conversation memory is handled by PostgreSQL checkpointer
 
@@ -99,7 +109,7 @@ class DSAgentService:
                 , self.context_middleware
                 , self.tool_context_middleware
                 , SummarizationMiddleware(
-                    model="gpt-oss:20b"
+                    model="gemma3:4b"
                     , max_tokens_before_summary=80000
                     , messages_to_keep=15
                     , summary_prefix="## Context from earlier:\n"
@@ -156,7 +166,8 @@ class DSAgentService:
 
             config = {
                 "configurable": {"thread_id": thread_id},
-                "recursion_limit": 50  # Increase from default 25 to handle complex tasks
+                "recursion_limit": 50,  # Increase from default 25 to handle complex tasks
+                "max_concurrency": 5  # Limit concurrent operations to reduce thread pressure
             }
 
             state = {"messages": [HumanMessage(content=message_content)]}
@@ -196,7 +207,8 @@ class DSAgentService:
 
             config  = {
                 "configurable"          : {"thread_id": thread_id}
-                , "recursion_limit"     : 50 
+                , "recursion_limit"     : 50
+                , "max_concurrency"     : 5  # Limit concurrent operations to reduce thread pressure
             }
 
             state   = {"messages": [HumanMessage(content=message_content)]}
@@ -347,3 +359,9 @@ class DSAgentService:
                 "type"  : "error"
                 , "error": str(e)
             }
+
+    def cleanup(self):
+        """Cleanup resources including thread pool executor"""
+        if hasattr(self, 'executor'):
+            self.executor.shutdown(wait=True, cancel_futures=True)
+            logger.info("Thread pool executor shutdown successfully")

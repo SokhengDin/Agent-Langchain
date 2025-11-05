@@ -66,10 +66,15 @@ services:
       - api
     restart: unless-stopped
     user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
-    shm_size: '2gb'
+    shm_size: '4gb'
     tmpfs:
-      - /tmp:rw,exec,nosuid,nodev,size=1g
-      - /dev/shm:rw,exec,nosuid,nodev,size=2g
+      - /tmp:rw,exec,size=2g
+      - /dev/shm:rw,exec,size=4g
+    ulimits:
+      nproc: 65535
+      nofile:
+        soft: 65535
+        hard: 65535
     environment:
       - API_BASE_URL=http://hotel_agent_api:8000
       - FRONT_API_BASE_URL=https://ams-agent.redalab.org
@@ -86,6 +91,7 @@ services:
       - MPLCONFIGDIR=/app/.matplotlib
       - XDG_CACHE_HOME=/app/.cache
       - TMPDIR=/app/temp
+      - PYTHONUNBUFFERED=1
     ports:
       - "8005:8005"
     volumes:
