@@ -83,7 +83,7 @@ class CodeExecutionTools:
         return True, None
 
     @staticmethod
-    def _execute_in_process(code: str, result_queue: Queue):
+    def _execute_in_process(code: str, result_queue: Queue, plot_path: str):
         try:
             stdout_capture = io.StringIO()
             stderr_capture = io.StringIO()
@@ -179,7 +179,11 @@ class CodeExecutionTools:
             stdout_text = stdout_capture.getvalue()
             stderr_text = stderr_capture.getvalue()
 
-            has_plots = len(plt.get_fignums()) > 0
+            has_plots = len(plt_exec.get_fignums()) > 0
+
+            if has_plots:
+                plt_exec.savefig(plot_path, dpi=150, bbox_inches='tight')
+                plt_exec.close('all')
 
             result_queue.put({
                 'success': True,
@@ -250,8 +254,16 @@ class CodeExecutionTools:
                 runtime.stream_writer("✅ Security check passed")
                 runtime.stream_writer("⚙️ Executing code...")
 
+            output_dir = Path("output/plots")
+            output_dir.mkdir(parents=True, exist_ok=True)
+
+            import time
+            timestamp       = int(time.time() * 1000)
+            plot_filename   = f"code_execution_{timestamp}.png"
+            plot_path       = str(output_dir / plot_filename)
+
             result_queue = Queue()
-            process = Process(target=CodeExecutionTools._execute_in_process, args=(code, result_queue))
+            process = Process(target=CodeExecutionTools._execute_in_process, args=(code, result_queue, plot_path))
             process.start()
             process.join(timeout=MAX_EXECUTION_TIME)
 
@@ -304,29 +316,15 @@ class CodeExecutionTools:
                 }
 
                 if save_plot and result['has_plots']:
-                    if runtime and runtime.stream_writer:
-                        runtime.stream_writer("📊 Saving plot...")
-
-                    output_dir = Path("output/plots")
-                    output_dir.mkdir(parents=True, exist_ok=True)
-
-                    import time
-                    timestamp       = int(time.time() * 1000)
-                    plot_filename   = f"code_execution_{timestamp}.png"
-                    output_path     = str(output_dir / plot_filename)
-
-                    plt.savefig(output_path, dpi=150, bbox_inches='tight')
-                    plt.close('all')
-
                     file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{plot_filename}"
 
-                    response["data"]["plot_path"] = output_path
+                    response["data"]["plot_path"] = plot_path
                     response["data"]["file_url"] = file_url
 
                     if runtime and runtime.stream_writer:
                         runtime.stream_writer(f"✅ Plot saved: {file_url}")
 
-                    logger.info(f"Plot saved from code execution: {output_path}")
+                    logger.info(f"Plot saved from code execution: {plot_path}")
 
                 if runtime:
                     runtime.state["code_execution_count"] = execution_count + 1
