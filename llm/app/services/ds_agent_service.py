@@ -111,7 +111,6 @@ class DSAgentService:
                 , ToolCallLimitMiddleware(
                     tool_name="execute_python_code"
                     , run_limit=10
-                    , exit_behavior="continue"
                 )
                 , ToolCallLimitMiddleware(
                     tool_name="analyze_exercise_image"
