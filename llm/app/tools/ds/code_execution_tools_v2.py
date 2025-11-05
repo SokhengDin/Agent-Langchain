@@ -219,6 +219,13 @@ class CodeExecutionTools:
 
         Security: No system commands, file ops, network access, or dangerous functions.
         """
+        logger.info("=" * 80)
+        logger.info("EXECUTE_PYTHON_CODE TOOL CALLED")
+        logger.info("=" * 80)
+        logger.info(f"Code to execute:\n{code}")
+        logger.info(f"Save plot: {save_plot}")
+        logger.info("=" * 80)
+
         try:
             if runtime and runtime.stream_writer:
                 runtime.stream_writer("🔍 Validating code for security...")

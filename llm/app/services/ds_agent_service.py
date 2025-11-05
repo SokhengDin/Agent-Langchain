@@ -101,6 +101,9 @@ class DSAgentService:
         self.tool_context_middleware    = DSToolContextMiddleware()
         self.prompt_middleware          = create_ds_dynamic_prompt(self.prompt)
 
+        logger.info(f"Registered {len(self.tools)} tools for DS Agent")
+        logger.info(f"Tool names: {[t.name for t in self.tools]}")
+
         self.agent = create_agent(
             model           = self.llm
             , tools         = self.tools
