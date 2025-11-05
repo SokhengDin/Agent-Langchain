@@ -290,7 +290,12 @@ class CodeExecutionTools:
                     if runtime and runtime.stream_writer:
                         runtime.stream_writer(f"❌ Execution failed: {result['error']}")
 
-                    logger.error(f"Code execution error: {result['traceback']}")
+                    logger.error("=" * 80)
+                    logger.error("CODE EXECUTION FAILED")
+                    logger.error("=" * 80)
+                    logger.error(f"Error: {result['error']}")
+                    logger.error(f"Full Traceback:\n{result.get('traceback', 'No traceback available')}")
+                    logger.error("=" * 80)
 
                     return {
                         "status"    : 500
