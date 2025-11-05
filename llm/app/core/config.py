@@ -22,10 +22,10 @@ class Settings(BaseSettings):
     LANGGRAPH_DB_HOST   : str = config('LANGGRAPH_DB_HOST', cast=str)
     LANGGRAPH_DB_PORT   : str = config('LANGGRAPH_DB_PORT', cast=str)
 
-    # LANGSMITH_TRACING       : str = config('LANGSMITH_TRACING', cast=str)
-    # LANGSMITH_ENDPOINT      : str = config('LANGSMITH_ENDPOINT', cast=str)
-    # LANGSMITH_API_KEY       : str = config('LANGSMITH_API_KEY', cast=str)
-    # LANGSMITH_PROJECT       : str = config('LANGSMITH_PROJECT', cast=str)
+    LANGSMITH_TRACING       : str = config('LANGSMITH_TRACING', cast=str)
+    LANGSMITH_ENDPOINT      : str = config('LANGSMITH_ENDPOINT', cast=str)
+    LANGSMITH_API_KEY       : str = config('LANGSMITH_API_KEY', cast=str)
+    LANGSMITH_PROJECT       : str = config('LANGSMITH_PROJECT', cast=str)
 
     class Config:
         env_file    = ".env"

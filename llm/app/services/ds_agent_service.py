@@ -34,6 +34,14 @@ from app.middleware.tool_error_middleware import handle_tool_errors
 from app.core.config import settings
 from app import logger
 
+import os
+
+# Enable LangSmith tracing for debugging
+os.environ["LANGCHAIN_TRACING_V2"] = settings.LANGSMITH_TRACING
+os.environ["LANGCHAIN_ENDPOINT"] = settings.LANGSMITH_ENDPOINT
+os.environ["LANGCHAIN_API_KEY"] = settings.LANGSMITH_API_KEY
+os.environ["LANGCHAIN_PROJECT"] = settings.LANGSMITH_PROJECT
+
 class DSAgentService:
 
     def __init__(self, checkpointer: AsyncPostgresSaver):
