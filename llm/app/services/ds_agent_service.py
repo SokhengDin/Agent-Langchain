@@ -168,8 +168,8 @@ class DSAgentService:
 
             config = {
                 "configurable": {"thread_id": thread_id},
-                "recursion_limit": 50,  # Increase from default 25 to handle complex tasks
-                "max_concurrency": 5  # Limit concurrent operations to reduce thread pressure
+                "recursion_limit": 100,
+                "max_concurrency": 5
             }
 
             state = {"messages": [HumanMessage(content=message_content)]}
@@ -209,8 +209,8 @@ class DSAgentService:
 
             config  = {
                 "configurable"          : {"thread_id": thread_id}
-                , "recursion_limit"     : 50
-                , "max_concurrency"     : 5  # Limit concurrent operations to reduce thread pressure
+                , "recursion_limit"     : 100
+                , "max_concurrency"     : 5
             }
 
             state   = {"messages": [HumanMessage(content=message_content)]}
