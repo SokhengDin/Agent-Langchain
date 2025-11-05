@@ -94,6 +94,14 @@ class DSAgentService:
             , streaming = True
         )
 
+        # Separate LLM for summarization (smaller, faster model)
+        self.summary_llm = ChatOllama(
+            base_url    = settings.OLLAMA_BASE_URL
+            , model     = "gemma3:4b"
+            , temperature= 0.0
+            , num_ctx   = 8192
+        )
+
         self.prompt = DSPrompt.prompt_agent()
 
         self.state_init_middleware      = DSStateInitMiddleware()
@@ -109,11 +117,10 @@ class DSAgentService:
                 , self.context_middleware
                 , self.tool_context_middleware
                 , SummarizationMiddleware(
-                    model="gemma3:4b"
-                    , model_provider="ollama"
-                    , max_tokens_before_summary=80000
-                    , messages_to_keep=15
-                    , summary_prefix="## Context from earlier:\n"
+                    model                       = self.summary_llm
+                    , max_tokens_before_summary = 80000
+                    , messages_to_keep          = 15
+                    , summary_prefix            = "## Context from earlier:\n"
                 )
                 , ToolCallLimitMiddleware(
                     thread_limit=100
