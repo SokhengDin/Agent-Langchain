@@ -110,6 +110,7 @@ class DSAgentService:
                 , self.tool_context_middleware
                 , SummarizationMiddleware(
                     model="gemma3:4b"
+                    , model_provider="ollama"
                     , max_tokens_before_summary=80000
                     , messages_to_keep=15
                     , summary_prefix="## Context from earlier:\n"
