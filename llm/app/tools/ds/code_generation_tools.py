@@ -1,0 +1,115 @@
+from typing import Dict, Any
+from pydantic import BaseModel, Field
+
+from langchain_core.tools import tool
+from langchain.tools import ToolRuntime
+from langchain_ollama import ChatOllama
+
+from app import logger
+from app.core.config import settings
+from app.states.ds_agent_state import DSAgentState
+
+
+class CodeGenerationInput(BaseModel):
+    task_description: str = Field(
+        description="Clear description of what the code should do. Include requirements, constraints, and expected behavior."
+    )
+    language: str = Field(
+        default="python"
+        , description="Programming language (python, javascript, etc.)"
+    )
+    context: str = Field(
+        default=""
+        , description="Additional context like existing variables, data structures, or code that needs to integrate with this"
+    )
+
+
+class CodeGenerationTools:
+
+    @staticmethod
+    @tool("generate_code", args_schema=CodeGenerationInput)
+    def generate_code(
+        task_description    : str
+        , language          : str = "python"
+        , context           : str = ""
+        , runtime           : ToolRuntime[None, DSAgentState] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate code using a specialized coding model (qwen3-coder:30b).
+
+        Use this tool when you need to write code but are not confident in generating it yourself.
+        The coding model excels at: data processing, algorithms, API integrations, complex logic.
+
+        Returns generated code with explanation.
+        """
+        try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer("🤖 Generating code with specialized coding model...")
+
+            coder_llm = ChatOllama(
+                base_url    = settings.OLLAMA_BASE_URL
+                , model     = "qwen3-coder:30b"
+                , temperature= 0.0
+                , num_ctx   = 32768
+            )
+
+            prompt = f"""You are an expert programmer. Generate clean, efficient, well-commented code.
+
+Task: {task_description}
+
+Language: {language}
+
+{f"Context: {context}" if context else ""}
+
+Requirements:
+1. Generate ONLY executable code, no explanations before or after
+2. Use best practices and proper error handling
+3. Add clear comments explaining key logic
+4. For Python: use type hints
+5. Make code production-ready
+
+Generate the code now:"""
+
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer("💭 Coding model is thinking...")
+
+            response        = coder_llm.invoke(prompt)
+            generated_code  = response.content.strip()
+
+            code_lines      = generated_code.split('\n')
+            if code_lines and code_lines[0].startswith('```'):
+                code_lines = code_lines[1:]
+            if code_lines and code_lines[-1].startswith('```'):
+                code_lines = code_lines[:-1]
+            generated_code = '\n'.join(code_lines).strip()
+
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Generated {len(generated_code.split())} lines of code")
+
+            logger.info(f"Generated code for task: {task_description[:100]}")
+
+            return {
+                "status"    : 200
+                , "message" : "Code generated successfully"
+                , "data"    : {
+                    "code"              : generated_code
+                    , "language"        : language
+                    , "task_description": task_description
+                    , "lines_of_code"   : len(generated_code.split('\n'))
+                }
+            }
+
+        except Exception as e:
+            error_msg = str(e)
+            logger.error(f"Error generating code: {error_msg}")
+
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Code generation failed: {error_msg}")
+
+            return {
+                "status"    : 500
+                , "message" : f"Code generation failed: {error_msg}"
+                , "data"    : {
+                    "error" : error_msg
+                }
+            }

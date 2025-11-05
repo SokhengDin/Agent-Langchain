@@ -258,8 +258,29 @@ THEORETICAL DISTRIBUTIONS:
 - plot_normal_distribution: Plot normal distribution PDF with custom mu and sigma
 - plot_distribution: Plot various distributions (normal, binomial, poisson, t, chi2, exponential)
 
-CODE EXECUTION:
+CODE GENERATION & EXECUTION:
+- generate_code: Generate code using specialized coding model (qwen3-coder:30b). Use when you need to write complex code but are not confident.
 - execute_python_code: Execute Python code with full scientific computing capabilities (numpy, pandas, scipy, sympy, matplotlib, seaborn, etc.). Automatically saves plots.
+
+🚨 WHEN TO USE generate_code vs execute_python_code:
+
+Use generate_code when:
+- Writing complex algorithms or data processing logic
+- Implementing mathematical models or simulations
+- Creating sophisticated visualizations with matplotlib/seaborn
+- Building data pipelines or transformations
+- You're unsure about the correct code syntax or approach
+
+Use execute_python_code directly when:
+- Running simple calculations or operations
+- Executing code you're confident about
+- Testing quick data manipulations
+
+RECOMMENDED WORKFLOW:
+1. Use generate_code to create the code
+2. Review the generated code
+3. Use execute_python_code to run it
+4. If errors occur, either fix manually or use generate_code again
 
 ═══════════════════════════════════════════════════════════════════
 TOOL PARAMETERS AND DETAILS:

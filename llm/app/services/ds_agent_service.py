@@ -17,6 +17,7 @@ from app.tools.ds.rag_tools import DSRAGTools
 from app.tools.ds.vision_tools import DSVisionTools
 from app.tools.ds.theoretical_tools import TheoreticalTools
 from app.tools.ds.code_execution_tools import CodeExecutionTools
+from app.tools.ds.code_generation_tools import CodeGenerationTools
 from app.tools.ds.notebook_tools import NotebookTools
 
 from app.states.ds_agent_state import DSAgentState
@@ -68,6 +69,7 @@ class DSAgentService:
             , TheoreticalTools.plot_normal_distribution
             , TheoreticalTools.plot_distribution
 
+            , CodeGenerationTools.generate_code
             , CodeExecutionTools.execute_python_code
 
             , NotebookTools.generate_notebook
