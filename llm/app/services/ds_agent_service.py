@@ -126,27 +126,27 @@ class DSAgentService:
                     , messages_to_keep          = 15
                     , summary_prefix            = "## Context from earlier:\n"
                 )
-                , ToolCallLimitMiddleware(
-                    thread_limit=50
-                    , run_limit=15
-                )
-                , ToolCallLimitMiddleware(
-                    tool_name="execute_python_code"
-                    , thread_limit=30
-                    , run_limit=5
-                )
-                , ToolCallLimitMiddleware(
-                    tool_name="analyze_exercise_image"
-                    , thread_limit=10
-                )
-                , ToolCallLimitMiddleware(
-                    tool_name="extract_math_equations"
-                    , thread_limit=10
-                )
-                , ToolCallLimitMiddleware(
-                    tool_name="analyze_graph_chart"
-                    , thread_limit=10
-                )
+                # , ToolCallLimitMiddleware(
+                #     thread_limit=50
+                #     , run_limit=15
+                # )
+                # , ToolCallLimitMiddleware(
+                #     tool_name="execute_python_code"
+                #     , thread_limit=30
+                #     , run_limit=5
+                # )
+                # , ToolCallLimitMiddleware(
+                #     tool_name="analyze_exercise_image"
+                #     , thread_limit=10
+                # )
+                # , ToolCallLimitMiddleware(
+                #     tool_name="extract_math_equations"
+                #     , thread_limit=10
+                # )
+                # , ToolCallLimitMiddleware(
+                #     tool_name="analyze_graph_chart"
+                #     , thread_limit=10
+                # )
                 , ToolRetryMiddleware(
                     max_retries=2
                     , backoff_factor=2.0
