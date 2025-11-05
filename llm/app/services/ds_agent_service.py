@@ -16,7 +16,7 @@ from app.tools.ds.ml_tools import MLTools
 from app.tools.ds.rag_tools import DSRAGTools
 from app.tools.ds.vision_tools import DSVisionTools
 from app.tools.ds.theoretical_tools import TheoreticalTools
-from app.tools.ds.code_execution_tools import CodeExecutionTools
+from app.tools.ds.code_execution_tools_v2 import CodeExecutionTools
 from app.tools.ds.code_generation_tools import CodeGenerationTools
 from app.tools.ds.notebook_tools import NotebookTools
 
