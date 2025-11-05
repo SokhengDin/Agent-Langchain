@@ -8,9 +8,9 @@ from app import logger
 
 
 @wrap_model_call
-def handle_json_parsing_errors(request: ModelRequest, handler) -> ModelResponse:
+async def handle_json_parsing_errors(request: ModelRequest, handler) -> ModelResponse:
     try:
-        return handler(request)
+        return await handler(request)
 
     except ResponseError as e:
         error_str = str(e)
