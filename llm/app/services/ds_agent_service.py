@@ -74,8 +74,8 @@ class DSAgentService:
             , DSVisionTools.extract_math_equations
             , DSVisionTools.analyze_graph_chart
 
-            , TheoreticalTools.plot_normal_distribution
-            , TheoreticalTools.plot_distribution
+            # , TheoreticalTools.plot_normal_distribution
+            # , TheoreticalTools.plot_distribution
 
             , CodeGenerationTools.generate_code
             , CodeExecutionTools.execute_python_code
