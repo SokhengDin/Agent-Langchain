@@ -5,11 +5,11 @@ from app import logger
 
 
 @wrap_tool_call
-async def handle_code_execution_feedback(request, handler):
+def handle_code_execution_feedback(request, handler):
     tool_name           = request.tool_call.get("name")
 
     if tool_name != "execute_python_code":
-        return await handler(request)
+        return handler(request)
 
     try:
         state           = request.runtime.state
@@ -22,7 +22,7 @@ async def handle_code_execution_feedback(request, handler):
                 , tool_call_id  = request.tool_call["id"]
             )
 
-        result          = await handler(request)
+        result          = handler(request)
 
         if isinstance(result, ToolMessage):
             content     = result.content

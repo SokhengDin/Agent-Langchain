@@ -106,7 +106,7 @@ class CodeExecutionTools:
 
     @staticmethod
     @tool("execute_python_code", args_schema=CodeExecutionInput)
-    async def execute_python_code(
+    def execute_python_code(
         code        : str
         , save_plot : bool = True
         , runtime   : ToolRuntime[None, DSAgentState] = None
@@ -177,6 +177,8 @@ class CodeExecutionTools:
             import scipy.stats as scipy_stats
 
             matplotlib.use('Agg', force=True)
+            import matplotlib.pyplot as plt_exec
+            plt_exec.ioff()
 
             try:
                 sklearn = __import__('sklearn')
@@ -216,7 +218,7 @@ class CodeExecutionTools:
                 , 'pd'          : __import__('pandas')
                 , 'pl'          : pl
                 , 'polars'      : polars
-                , 'plt'         : plt
+                , 'plt'         : plt_exec
                 , 'matplotlib'  : matplotlib
                 , 'animation'   : mpl_animation
                 , 'FuncAnimation': mpl_animation.FuncAnimation

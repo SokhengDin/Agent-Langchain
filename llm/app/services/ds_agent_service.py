@@ -27,6 +27,7 @@ from app.middleware.ds.ds_context_middleware import DSContextMiddleware
 from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
 from app.middleware.ds.ds_code_execution_middleware import handle_code_execution_feedback
+from app.middleware.ds.ds_json_parser_middleware import handle_json_parsing_errors
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
@@ -75,7 +76,7 @@ class DSAgentService:
 
         self.llm = ChatOllama(
             base_url    = settings.OLLAMA_BASE_URL
-            , model     = "gpt-oss:20b"
+            , model     = "qwen3:30b"
             , temperature= 0.0
             , num_ctx   = 131072
             , reasoning = True
@@ -104,6 +105,7 @@ class DSAgentService:
                 self.state_init_middleware
                 , self.context_middleware
                 , self.tool_context_middleware
+                , handle_json_parsing_errors
                 , SummarizationMiddleware(
                     model                       = self.summary_llm
                     , max_tokens_before_summary = 80000
@@ -111,29 +113,30 @@ class DSAgentService:
                     , summary_prefix            = "## Context from earlier:\n"
                 )
                 , ToolCallLimitMiddleware(
-                    thread_limit=100
-                    , run_limit=20
+                    thread_limit=50
+                    , run_limit=15
                 )
                 , ToolCallLimitMiddleware(
                     tool_name="execute_python_code"
-                    , run_limit=10
+                    , thread_limit=30
+                    , run_limit=5
                 )
                 , ToolCallLimitMiddleware(
                     tool_name="analyze_exercise_image"
-                    , thread_limit=15
+                    , thread_limit=10
                 )
                 , ToolCallLimitMiddleware(
                     tool_name="extract_math_equations"
-                    , thread_limit=15
+                    , thread_limit=10
                 )
                 , ToolCallLimitMiddleware(
                     tool_name="analyze_graph_chart"
-                    , thread_limit=15
+                    , thread_limit=10
                 )
                 , ToolRetryMiddleware(
                     max_retries=2
-                    , backoff_factor=1.5
-                    , initial_delay=0.5
+                    , backoff_factor=2.0
+                    , initial_delay=1.0
                 )
                 , handle_code_execution_feedback
                 , handle_tool_errors
