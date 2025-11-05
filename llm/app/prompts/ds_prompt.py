@@ -222,6 +222,24 @@ RECOMMENDED WORKFLOW FOR PLOTTING:
 2. For complex plots: Use generate_code to create the code, then execute_python_code to run it
 3. If errors occur, read the error message, fix the code, and retry with execute_python_code
 
+🚨 CRITICAL MATPLOTLIB RULES (AVOID NotImplementedError):
+- NEVER use plt.show() - raises NotImplementedError in headless environment
+- NEVER use fig.show() - same error
+- NEVER call plt.savefig() manually - the tool does this automatically
+- Just create the plot with plt.plot(), plt.bar(), etc. and the tool saves it
+
+CORRECT matplotlib pattern:
+```python
+import matplotlib.pyplot as plt
+x = [1, 2, 3, 4, 5]
+y = [1, 4, 9, 16, 25]
+plt.plot(x, y)
+plt.title('My Plot')
+plt.xlabel('x')
+plt.ylabel('y')
+# NO plt.show() or plt.savefig() - tool handles this automatically!
+```
+
 ═══════════════════════════════════════════════════════════════════
 TOOL PARAMETERS AND DETAILS:
 ═══════════════════════════════════════════════════════════════════

@@ -6,9 +6,6 @@ import traceback
 import ast
 import multiprocessing
 from multiprocessing import Process, Queue
-import matplotlib
-matplotlib.use('Agg')
-import matplotlib.pyplot as plt
 from pydantic import BaseModel, Field
 
 from langchain_core.tools import tool
@@ -21,6 +18,9 @@ from app.states.ds_agent_state import DSAgentState
 
 MAX_EXECUTION_TIME = 30
 MAX_EXECUTIONS_PER_CONVERSATION = 10
+
+# Don't import matplotlib at module level - it causes issues with multiprocessing
+# Each subprocess will import it fresh with the correct backend
 
 
 class CodeExecutionInput(BaseModel):
@@ -98,12 +98,14 @@ class CodeExecutionTools:
                 go = None
                 px = None
 
-            import matplotlib.animation as mpl_animation
-            import scipy.stats as scipy_stats
-
+            # Import matplotlib with Agg backend for headless plotting
+            import matplotlib
             matplotlib.use('Agg', force=True)
             import matplotlib.pyplot as plt_exec
+            import matplotlib.animation as mpl_animation
             plt_exec.ioff()
+
+            import scipy.stats as scipy_stats
 
             try:
                 sklearn = __import__('sklearn')

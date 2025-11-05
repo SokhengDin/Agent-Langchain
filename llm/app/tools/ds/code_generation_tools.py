@@ -68,6 +68,20 @@ Requirements:
 4. For Python: use type hints
 5. Make code production-ready
 
+🚨 CRITICAL - For matplotlib/plotting code:
+- NEVER use plt.show() - raises NotImplementedError in headless environment
+- NEVER use fig.show() - same error
+- NEVER use plt.savefig() - the execution environment handles this automatically
+- Just create plots with plt.plot(), plt.bar(), etc. and leave them
+
+Example CORRECT matplotlib code:
+```python
+import matplotlib.pyplot as plt
+plt.plot([1,2,3], [1,4,9])
+plt.title('My Plot')
+# NO plt.show() or plt.savefig()!
+```
+
 Generate the code now:"""
 
             if runtime and runtime.stream_writer:
