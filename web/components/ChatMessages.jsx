@@ -132,7 +132,7 @@ function CodeComponent({ children, className, inline, ...props }) {
     // Inline code - simple rendering
     if (inline) {
         return (
-            <code className='bg-muted px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all max-w-full inline-block' {...props}>
+            <code className='bg-muted px-1.5 py-0.5 rounded text-[11px] sm:text-xs font-mono break-all' {...props}>
                 {children}
             </code>
         );
@@ -249,7 +249,7 @@ function MessageBubble({ message, onRetry }) {
 
     return (
         <div className={cn(
-            "flex gap-1.5 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-500 ease-out max-w-full",
+            "flex gap-1.5 sm:gap-3 mb-4 sm:mb-6 animate-in slide-in-from-bottom-2 duration-500 ease-out",
             isUser ? "flex-row-reverse" : "flex-row"
         )}>
             <Avatar className="h-7 w-7 sm:h-8 sm:w-8 mt-1 ring-2 ring-background shadow-sm flex-shrink-0 transition-transform duration-300">
@@ -271,20 +271,19 @@ function MessageBubble({ message, onRetry }) {
             </Avatar>
 
             <div className={cn(
-                "flex flex-col min-w-0 flex-1",
-                "max-w-[calc(100%-2.5rem)] sm:max-w-[85%] md:max-w-[88%] lg:max-w-[90%]",
+                "flex flex-col min-w-0",
+                "max-w-[calc(100%-3.5rem)] sm:max-w-[80%] md:max-w-[85%] lg:max-w-[88%]",
                 isUser ? "items-end" : "items-start"
             )}>
                 <Card className={cn(
-                    "shadow-sm border-0",
-                    "max-w-full min-w-0 overflow-hidden",
+                    "shadow-sm border-0 overflow-hidden w-full",
                     isUser
                     ? "bg-primary text-primary-foreground"
                     : isError
                         ? "bg-destructive/10 border-destructive/20"
                         : "bg-muted/80"
                 )}>
-                    <CardContent className="p-2.5 sm:p-3 min-w-0 max-w-full w-full box-border">
+                    <CardContent className="p-2.5 sm:p-3">
                         {/* Show attachments if present */}
                         {message.attachments && message.attachments.length > 0 && (
                             <div className="mb-2 space-y-1.5 sm:space-y-2">
@@ -326,9 +325,9 @@ function MessageBubble({ message, onRetry }) {
                                 )}
                             </div>
                         ) : isUser ? (
-                            <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words overflow-wrap-anywhere max-w-full'>{message.content}</p>
+                            <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words'>{message.content}</p>
                         ) : (
-                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm !max-w-none dark:prose-invert min-w-0 w-full break-words overflow-anywhere [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0 [&>*]:max-w-full'>
+                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm dark:prose-invert [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0' style={{maxWidth: 'none'}}>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm, remarkMath]}
                                     rehypePlugins={[rehypeKatex]}
@@ -344,9 +343,9 @@ function MessageBubble({ message, onRetry }) {
                                             );
                                             // Use div if there's a block element to avoid invalid HTML nesting
                                             return hasBlockElement ? (
-                                                <div className='mb-2 last:mb-0 break-words overflow-anywhere max-w-full' {...props}>{children}</div>
+                                                <div className='mb-2 last:mb-0' {...props}>{children}</div>
                                             ) : (
-                                                <p className='mb-2 last:mb-0 break-words overflow-anywhere max-w-full' {...props}>{children}</p>
+                                                <p className='mb-2 last:mb-0' {...props}>{children}</p>
                                             );
                                         },
                                         ul: ({node, ...props}) => <ul className='mb-2 ml-3 sm:ml-4 list-disc' {...props} />,

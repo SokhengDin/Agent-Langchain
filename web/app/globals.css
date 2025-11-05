@@ -114,7 +114,14 @@
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
   }
+
+  html, body {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-geist-sans), var(--font-noto-sans-khmer), system-ui, -apple-system, sans-serif;
@@ -359,18 +366,12 @@
 
 /* Prose text wrapping - apply to all screen sizes */
 .prose {
-  overflow-wrap: anywhere;
-  word-wrap: break-word;
-  word-break: break-word;
-  max-width: 100% !important;
-  width: 100%;
-  hyphens: auto;
+  max-width: none !important;
 }
 
-.prose p, .prose li, .prose div, .prose span, .prose strong, .prose em {
-  overflow-wrap: anywhere;
+.prose p, .prose li, .prose div {
+  overflow-wrap: break-word;
   word-wrap: break-word;
-  word-break: break-word;
   max-width: 100%;
 }
 
@@ -405,10 +406,10 @@
     font-size: 0.8125rem;
   }
 
-  /* Extra aggressive word breaking on mobile */
-  .prose * {
-    overflow-wrap: anywhere !important;
-    word-break: break-word !important;
+  /* Ensure content doesn't overflow on mobile */
+  .prose p, .prose li, .prose div, .prose span {
+    word-break: break-word;
+    overflow-wrap: break-word;
   }
 }
 
