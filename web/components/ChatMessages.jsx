@@ -183,7 +183,7 @@ function CodeBlock({ children, className, ...props }) {
     // Code block with Shiki
     if (highlightedHtml) {
         return (
-            <div className="relative my-2">
+            <div className="relative my-2 max-w-full">
                 <button
                     onClick={handleCopy}
                     className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-all duration-200 z-20"
@@ -201,7 +201,7 @@ function CodeBlock({ children, className, ...props }) {
                     )}
                 </button>
                 <div
-                    className="overflow-x-auto rounded-md text-xs sm:text-sm"
+                    className="overflow-x-auto rounded-md text-xs sm:text-sm max-w-full"
                     dangerouslySetInnerHTML={{ __html: highlightedHtml }}
                 />
             </div>
@@ -210,7 +210,7 @@ function CodeBlock({ children, className, ...props }) {
 
     // Loading or fallback
     return (
-        <div className="relative my-2">
+        <div className="relative my-2 max-w-full">
             <button
                 onClick={handleCopy}
                 className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-white hover:bg-gray-700 rounded transition-all duration-200 z-20"
@@ -227,7 +227,7 @@ function CodeBlock({ children, className, ...props }) {
                     </svg>
                 )}
             </button>
-            <pre className="bg-[#0d1117] text-gray-300 overflow-x-auto rounded-md p-3 text-[11px] sm:text-xs">
+            <pre className="bg-[#0d1117] text-gray-300 overflow-x-auto rounded-md p-3 text-[11px] sm:text-xs max-w-full">
                 <code className="font-mono">{code}</code>
             </pre>
         </div>
@@ -271,7 +271,7 @@ function MessageBubble({ message, onRetry }) {
             </Avatar>
 
             <div className={cn(
-                "flex flex-col max-w-[calc(100%-2.5rem)] sm:max-w-[85%] md:max-w-[88%] lg:max-w-[92%] min-w-0 w-full",
+                "flex flex-col max-w-[calc(100%-2.5rem)] sm:max-w-[85%] md:max-w-[88%] lg:max-w-[90%] min-w-0 w-auto",
                 isUser ? "items-end" : "items-start"
             )}>
                 <Card className={cn(
@@ -327,7 +327,7 @@ function MessageBubble({ message, onRetry }) {
                         ) : isUser ? (
                             <p className='text-xs sm:text-sm whitespace-pre-wrap leading-relaxed m-0 break-words overflow-wrap-anywhere max-w-full'>{message.content}</p>
                         ) : (
-                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm max-w-full dark:prose-invert min-w-0 overflow-hidden [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0'>
+                            <div ref={contentRef} className='text-xs sm:text-sm leading-relaxed prose prose-sm !max-w-none dark:prose-invert min-w-0 w-full [&>p>pre]:!m-0 [&>p:has(pre)]:!p-0'>
                                 <ReactMarkdown
                                     remarkPlugins={[remarkGfm, remarkMath]}
                                     rehypePlugins={[rehypeKatex]}
