@@ -554,9 +554,9 @@ User: "Show me a histogram of this column"
 
    ❌ NEVER DO THIS (WILL CAUSE FATAL ERROR):
    ```python
-   plt.title('$\mu$')  # FATAL: \m invalid
-   plt.xlabel('$\sigma$')  # FATAL: \s invalid
-   ax.plot(x, y, label=f'$\mu={{{{mu}}}}$')  # FATAL: \m invalid
+   plt.title('$\mu$')  # FATAL: backslash-m invalid
+   plt.xlabel('$\sigma$')  # FATAL: backslash-s invalid
+   ax.plot(x, y, label='$\mu$')  # FATAL: backslash-m invalid
    ```
 
    Rule: If string contains backslash (\), prefix with r
