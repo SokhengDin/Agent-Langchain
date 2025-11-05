@@ -315,11 +315,11 @@
 }
 
 /* Text wrapping utilities for mobile */
-.overflow-wrap-anywhere {
-  overflow-wrap: anywhere;
-  word-break: break-word;
+.overflow-wrap-anywhere,
+.overflow-anywhere {
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
   max-width: 100%;
-  display: block;
 }
 
 /* KaTeX math styling */
@@ -359,16 +359,18 @@
 
 /* Prose text wrapping - apply to all screen sizes */
 .prose {
-  overflow-wrap: break-word;
+  overflow-wrap: anywhere;
   word-wrap: break-word;
   word-break: break-word;
   max-width: 100% !important;
   width: 100%;
+  hyphens: auto;
 }
 
-.prose p, .prose li, .prose div {
-  overflow-wrap: break-word;
+.prose p, .prose li, .prose div, .prose span, .prose strong, .prose em {
+  overflow-wrap: anywhere;
   word-wrap: break-word;
+  word-break: break-word;
   max-width: 100%;
 }
 
@@ -401,6 +403,12 @@
 
   .prose code {
     font-size: 0.8125rem;
+  }
+
+  /* Extra aggressive word breaking on mobile */
+  .prose * {
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
   }
 }
 

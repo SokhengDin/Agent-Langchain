@@ -2,11 +2,12 @@ from typing import Dict, Any, Optional
 from uuid import uuid4
 from pathlib import Path
 
-from langchain_core.messages import HumanMessage
+from langchain_core.messages import HumanMessage, ToolMessage
 from langchain_ollama import ChatOllama
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from langchain.agents import create_agent
+from langchain.agents.middleware import SummarizationMiddleware, ToolCallLimitMiddleware, ToolRetryMiddleware
 
 from app.tools.ds.data_tools import DataTools
 from app.tools.ds.stats_tools import StatsTools
@@ -25,7 +26,6 @@ from app.middleware.ds.ds_state_init_middleware import DSStateInitMiddleware
 from app.middleware.ds.ds_context_middleware import DSContextMiddleware
 from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
-from app.middleware.ds.ds_memory_trim_middleware import trim_messages_middleware, notify_context_limit_middleware
 from app.middleware.ds.ds_code_execution_middleware import handle_code_execution_feedback
 from app.middleware.tool_error_middleware import handle_tool_errors
 
@@ -98,8 +98,38 @@ class DSAgentService:
                 self.state_init_middleware
                 , self.context_middleware
                 , self.tool_context_middleware
-                # , notify_context_limit_middleware
-                # , trim_messages_middleware
+                , SummarizationMiddleware(
+                    model="gpt-oss:20b"
+                    , max_tokens_before_summary=80000
+                    , messages_to_keep=15
+                    , summary_prefix="## Context from earlier:\n"
+                )
+                , ToolCallLimitMiddleware(
+                    thread_limit=100
+                    , run_limit=20
+                )
+                , ToolCallLimitMiddleware(
+                    tool_name="execute_python_code"
+                    , run_limit=10
+                    , exit_behavior="continue"
+                )
+                , ToolCallLimitMiddleware(
+                    tool_name="analyze_exercise_image"
+                    , thread_limit=15
+                )
+                , ToolCallLimitMiddleware(
+                    tool_name="extract_math_equations"
+                    , thread_limit=15
+                )
+                , ToolCallLimitMiddleware(
+                    tool_name="analyze_graph_chart"
+                    , thread_limit=15
+                )
+                , ToolRetryMiddleware(
+                    max_retries=2
+                    , backoff_factor=1.5
+                    , initial_delay=0.5
+                )
                 , handle_code_execution_feedback
                 , handle_tool_errors
                 , self.prompt_middleware
@@ -240,6 +270,28 @@ class DSAgentService:
                                         for tc in last_message.tool_calls
                                     ]
                                 }
+
+                            if isinstance(last_message, ToolMessage):
+                                try:
+                                    import json
+                                    content = last_message.content
+                                    if isinstance(content, str):
+                                        content_data = json.loads(content)
+                                    else:
+                                        content_data = content
+
+                                    yield {
+                                        "type"      : "tool_result"
+                                        , "tool_name": last_message.name if hasattr(last_message, 'name') else "unknown"
+                                        , "status"  : content_data.get("status") if isinstance(content_data, dict) else None
+                                        , "message" : content_data.get("message") if isinstance(content_data, dict) else str(content)
+                                    }
+                                except:
+                                    yield {
+                                        "type"      : "tool_result"
+                                        , "tool_name": last_message.name if hasattr(last_message, 'name') else "unknown"
+                                        , "message" : str(last_message.content)
+                                    }
 
             yield {
                 "type"      : "done"

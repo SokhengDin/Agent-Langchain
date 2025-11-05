@@ -1,22 +1,22 @@
-from typing import Dict, List, Optional, Annotated
+from typing import Dict, List, Optional
 import pandas as pd
 import numpy as np
 from scipy import stats as sp_stats
 
 from langchain_core.tools import tool
-from langgraph.prebuilt import InjectedState
+from langchain.tools import ToolRuntime
 
 from app import logger
+from app.states.ds_agent_state import DSAgentState
 
 class StatsTools:
-    """Tools for statistical analysis"""
 
     @staticmethod
     @tool("correlation_analysis")
     async def correlation_analysis(
         file_path   : str
         , columns   : Optional[List[str]] = None
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Calculate correlation matrix for numeric columns
@@ -29,6 +29,9 @@ class StatsTools:
             Dict with correlation matrix
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer("📊 Calculating correlations...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -41,6 +44,9 @@ class StatsTools:
 
             corr = df.corr()
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Analyzed {len(corr.columns)} columns")
+
             return {
                 "status"    : 200
                 , "message" : "Correlation calculated"
@@ -52,6 +58,8 @@ class StatsTools:
 
         except Exception as e:
             logger.error(f"Error in correlation analysis: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed correlation analysis: {str(e)}"
@@ -65,7 +73,7 @@ class StatsTools:
         , column    : str
         , test_type : str
         , value     : Optional[float] = None
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Perform hypothesis testing
@@ -80,6 +88,9 @@ class StatsTools:
             Dict with test results
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"🧪 Running {test_type} on '{column}'...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -105,11 +116,16 @@ class StatsTools:
                     , "normal"  : p_value > 0.05
                 }
             else:
+                if runtime and runtime.stream_writer:
+                    runtime.stream_writer(f"❌ Invalid test type: {test_type}")
                 return {
                     "status"    : 400
                     , "message" : "Invalid test type"
                     , "data"    : None
                 }
+
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Test complete (p-value: {result.get('p_value', 'N/A'):.4f})")
 
             return {
                 "status"    : 200
@@ -119,6 +135,8 @@ class StatsTools:
 
         except Exception as e:
             logger.error(f"Error in hypothesis test: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed hypothesis test: {str(e)}"
@@ -130,7 +148,7 @@ class StatsTools:
     async def distribution_analysis(
         file_path   : str
         , column    : str
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Analyze distribution of a column
@@ -143,6 +161,9 @@ class StatsTools:
             Dict with distribution statistics
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📊 Analyzing distribution of '{column}'...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -164,6 +185,9 @@ class StatsTools:
                 , "range"       : float(data.max() - data.min())
             }
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Distribution analysis complete")
+
             return {
                 "status"    : 200
                 , "message" : "Distribution analyzed"
@@ -172,6 +196,8 @@ class StatsTools:
 
         except Exception as e:
             logger.error(f"Error in distribution analysis: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed distribution analysis: {str(e)}"

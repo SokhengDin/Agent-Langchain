@@ -1,21 +1,21 @@
-from typing import Dict, List, Optional, Annotated
+from typing import Dict, List, Optional
 from pathlib import Path
 import pandas as pd
 import json
 
 from langchain_core.tools import tool
-from langgraph.prebuilt import InjectedState
+from langchain.tools import ToolRuntime
 
 from app import logger
+from app.states.ds_agent_state import DSAgentState
 
 class DataTools:
-    """Tools for data loading and basic analysis"""
 
     @staticmethod
     @tool("read_csv")
     async def read_csv(
         file_path       : str
-        , state         : Annotated[Dict, InjectedState]
+        , runtime       : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Read CSV file and provide summary statistics
@@ -27,6 +27,9 @@ class DataTools:
             Dict with data summary and preview
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📂 Loading {file_path}...")
+
             df = pd.read_csv(file_path)
 
             summary = {
@@ -38,6 +41,9 @@ class DataTools:
                 , "preview"     : df.head(5).to_dict(orient='records')
             }
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Loaded {len(df)} rows × {len(df.columns)} columns")
+
             logger.info(f"Read CSV: {file_path} - {len(df)} rows, {len(df.columns)} columns")
 
             return {
@@ -48,6 +54,8 @@ class DataTools:
 
         except Exception as e:
             logger.error(f"Error reading CSV: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed to read CSV: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to read CSV: {str(e)}"
@@ -59,7 +67,7 @@ class DataTools:
     async def read_excel(
         file_path       : str
         , sheet_name    : Optional[str] = None
-        , state         : Annotated[Dict, InjectedState] = None
+        , runtime       : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Read Excel file and provide summary
@@ -72,6 +80,9 @@ class DataTools:
             Dict with data summary and preview
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📂 Loading {file_path}...")
+
             df = pd.read_excel(file_path, sheet_name=sheet_name or 0)
 
             summary = {
@@ -83,6 +94,9 @@ class DataTools:
                 , "preview"     : df.head(5).to_dict(orient='records')
             }
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Loaded {len(df)} rows × {len(df.columns)} columns")
+
             logger.info(f"Read Excel: {file_path} - {len(df)} rows, {len(df.columns)} columns")
 
             return {
@@ -93,6 +107,8 @@ class DataTools:
 
         except Exception as e:
             logger.error(f"Error reading Excel: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed to read Excel: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to read Excel: {str(e)}"
@@ -104,7 +120,7 @@ class DataTools:
     async def get_column_info(
         file_path   : str
         , column    : str
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Get detailed statistics for a specific column
@@ -117,12 +133,17 @@ class DataTools:
             Dict with column statistics
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📊 Analyzing column '{column}'...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
                 df = pd.read_excel(file_path)
 
             if column not in df.columns:
+                if runtime and runtime.stream_writer:
+                    runtime.stream_writer(f"❌ Column '{column}' not found")
                 return {
                     "status"    : 404
                     , "message" : f"Column '{column}' not found"
@@ -153,6 +174,9 @@ class DataTools:
                 top_values = col_data.value_counts().head(5).to_dict()
                 stats["top_values"] = top_values
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Column analysis complete")
+
             return {
                 "status"    : 200
                 , "message" : "Column info retrieved"
@@ -161,6 +185,8 @@ class DataTools:
 
         except Exception as e:
             logger.error(f"Error getting column info: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to get column info: {str(e)}"

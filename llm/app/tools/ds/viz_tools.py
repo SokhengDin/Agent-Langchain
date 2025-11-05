@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional, Annotated
+from typing import Dict, List, Optional
 from pathlib import Path
 import pandas as pd
 import matplotlib
@@ -7,13 +7,13 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 from langchain_core.tools import tool
-from langgraph.prebuilt import InjectedState
+from langchain.tools import ToolRuntime
 
 from app import logger
 from app.core.config import settings
+from app.states.ds_agent_state import DSAgentState
 
 class VizTools:
-    """Tools for data visualization"""
 
     @staticmethod
     @tool("create_histogram")
@@ -22,7 +22,7 @@ class VizTools:
         , column    : str
         , bins      : int = 30
         , output_path: Optional[str] = None
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Create histogram for a column
@@ -37,6 +37,9 @@ class VizTools:
             Dict with plot path
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📊 Creating histogram for '{column}'...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -59,6 +62,9 @@ class VizTools:
             filename = Path(output_path).name
             file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Histogram saved: {file_url}")
+
             logger.info(f"Histogram saved: {output_path}")
 
             return {
@@ -72,6 +78,8 @@ class VizTools:
 
         except Exception as e:
             logger.error(f"Error creating histogram: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to create histogram: {str(e)}"
@@ -85,7 +93,7 @@ class VizTools:
         , x_column  : str
         , y_column  : str
         , output_path: Optional[str] = None
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Create scatter plot
@@ -100,6 +108,9 @@ class VizTools:
             Dict with plot path
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📊 Creating scatter plot: {x_column} vs {y_column}...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -122,8 +133,10 @@ class VizTools:
             filename = Path(output_path).name
             file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Scatter plot saved: {file_url}")
+
             logger.info(f"Scatter plot saved: {output_path}")
-            logger.debug(f"Scatter plot URL: {file_url}")
 
             return {
                 "status"    : 200
@@ -136,11 +149,12 @@ class VizTools:
 
         except Exception as e:
             logger.error(f"Error creating scatter plot: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to create scatter plot: {str(e)}"
                 , "data"    : None
-                , "file_url": file_url
             }
 
     @staticmethod
@@ -149,7 +163,7 @@ class VizTools:
         file_path   : str
         , columns   : Optional[List[str]] = None
         , output_path: Optional[str] = None
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Create correlation heatmap
@@ -163,6 +177,9 @@ class VizTools:
             Dict with plot path
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer("📊 Creating correlation heatmap...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -188,6 +205,9 @@ class VizTools:
             filename = Path(output_path).name
             file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Heatmap saved: {file_url}")
+
             logger.info(f"Heatmap saved: {output_path}")
 
             return {
@@ -201,6 +221,8 @@ class VizTools:
 
         except Exception as e:
             logger.error(f"Error creating heatmap: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to create heatmap: {str(e)}"
@@ -213,7 +235,7 @@ class VizTools:
         file_path   : str
         , column    : str
         , output_path: Optional[str] = None
-        , state     : Annotated[Dict, InjectedState] = None
+        , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict:
         """
         Create box plot for outlier detection
@@ -227,6 +249,9 @@ class VizTools:
             Dict with plot path and outlier info
         """
         try:
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"📊 Creating box plot for '{column}'...")
+
             if file_path.endswith('.csv'):
                 df = pd.read_csv(file_path)
             else:
@@ -254,6 +279,9 @@ class VizTools:
             filename = Path(output_path).name
             file_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{filename}"
 
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"✅ Box plot saved: {file_url}")
+
             logger.info(f"Box plot saved: {output_path}")
 
             return {
@@ -269,6 +297,8 @@ class VizTools:
 
         except Exception as e:
             logger.error(f"Error creating box plot: {str(e)}")
+            if runtime and runtime.stream_writer:
+                runtime.stream_writer(f"❌ Failed: {str(e)}")
             return {
                 "status"    : 500
                 , "message" : f"Failed to create box plot: {str(e)}"
