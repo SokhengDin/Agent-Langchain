@@ -16,6 +16,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     libgl1-mesa-dev \
     libgeos-dev \
     libgomp1 \
+    libfreetype6-dev \
+    libpng-dev \
+    pkg-config \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
