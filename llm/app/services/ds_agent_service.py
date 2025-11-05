@@ -330,7 +330,17 @@ class DSAgentService:
             logger.error(f"Error in conversation stream: {str(e)}")
             logger.error(f"Traceback: {traceback.format_exc()}")
 
-            if isinstance(e, ResponseError) and "error parsing tool call" in str(e):
+            # Handle "No generations found in stream" error
+            error_str = str(e)
+            if "No generations found in stream" in error_str:
+                logger.error("LLM failed to generate response - possible timeout, context overflow, or model crash")
+                yield {
+                    "type"  : "error"
+                    , "error": "The model failed to generate a response. This may be due to context size limits or server issues. Please try simplifying your request or starting a new conversation."
+                }
+                return
+
+            if isinstance(e, ResponseError) and "error parsing tool call" in error_str:
                 logger.warning("Detected Ollama tool JSON parsing error - providing feedback for retry")
 
                 feedback_msg = create_json_error_feedback(e)

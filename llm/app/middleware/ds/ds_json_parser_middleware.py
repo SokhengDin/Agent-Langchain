@@ -58,5 +58,14 @@ Try again now with the corrected formatting."""
         raise
 
     except Exception as e:
-        logger.error(f"Unexpected error in JSON parser middleware: {str(e)}")
+        error_str = str(e)
+
+        # Handle "No generations found in stream" gracefully
+        if "No generations found in stream" in error_str:
+            logger.error(f"LLM generation failed in JSON parser middleware: {error_str}")
+            logger.error("This usually indicates: context overflow, model timeout, or Ollama server issue")
+            # Re-raise to let the service layer handle it
+            raise
+
+        logger.error(f"Unexpected error in JSON parser middleware: {error_str}")
         raise
