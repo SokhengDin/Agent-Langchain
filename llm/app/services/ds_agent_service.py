@@ -81,6 +81,7 @@ class DSAgentService:
             , model     = "gpt-oss:20b"
             , temperature= 0.0
             , num_ctx   = 131072
+            , num_predict= 8192
             , reasoning = True
             , streaming = True
         )
