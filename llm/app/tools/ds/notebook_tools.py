@@ -14,8 +14,7 @@ from app.states.ds_agent_state import DSAgentState
 class NotebookTools:
 
     @staticmethod
-    @tool("generate_notebook")
-    async def generate_notebook(
+    async def _generate_notebook_impl(
         title: str
         , cells: List[Dict[str, Any]]
         , runtime: ToolRuntime[None, DSAgentState] = None
@@ -204,7 +203,7 @@ class NotebookTools:
                 "content": "## Conclusion\n\nThis notebook was generated to document the analysis process."
             })
 
-            return await NotebookTools.generate_notebook(
+            return await NotebookTools._generate_notebook_impl(
                 title=analysis_title,
                 cells=cells,
                 runtime=runtime
@@ -217,3 +216,35 @@ class NotebookTools:
                 "message": f"Failed to create analysis notebook: {str(e)}",
                 "data": None
             }
+
+    @staticmethod
+    @tool("generate_notebook")
+    async def generate_notebook(
+        title: str
+        , cells: List[Dict[str, Any]]
+        , runtime: ToolRuntime[None, DSAgentState] = None
+    ) -> Dict[str, Any]:
+        """
+        Generate a Jupyter notebook (.ipynb) file containing code, markdown explanations, and outputs.
+
+        Use this tool when the user explicitly requests a notebook file for their data analysis.
+        The notebook will contain all code, explanations, and can include data analysis results.
+
+        Args:
+            title: Title for the notebook (will be used as filename)
+            cells: List of cell dictionaries with structure:
+                [
+                    {
+                        "cell_type": "markdown",
+                        "content": "# Analysis Overview\nThis notebook contains..."
+                    },
+                    {
+                        "cell_type": "code",
+                        "content": "import pandas as pd\ndf = pd.read_csv('data.csv')",
+                        "outputs": []
+                    }
+                ]
+
+        Returns structured response with notebook path and URL.
+        """
+        return await NotebookTools._generate_notebook_impl(title, cells, runtime)

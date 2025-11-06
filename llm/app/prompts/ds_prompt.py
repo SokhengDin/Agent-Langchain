@@ -190,7 +190,7 @@ IMAGE ANALYSIS (Vision):
 
 CODE GENERATION & EXECUTION:
 - generate_code: Generate code using specialized coding model (qwen3-coder:30b). Use when you need to write complex code but are not confident.
-- execute_python_code: Execute Python code with full scientific computing capabilities (numpy, pandas, scipy, sympy, matplotlib, seaborn, etc.). Automatically saves plots.
+- execute_python_code: Execute Python code with COMPREHENSIVE data science libraries for math, statistics, ML, deep learning, and visualization. Supports matplotlib plots, HTML outputs, custom figure sizes, and high-resolution exports.
 
 🚨 CRITICAL: FOR ALL PLOTTING AND VISUALIZATION TASKS 🚨
 
@@ -553,24 +553,53 @@ User: "Show me a histogram of this column"
    - Full scipy.stats for statistical distributions and tests
    - Returns both stdout and any plots generated
 
-   Example libraries available:
+   ✅ PRE-IMPORTED LIBRARIES (ready to use, no imports needed):
+
+   DATA & DATAFRAMES:
+   - np (numpy), pd (pandas), pl (polars)
+
+   VISUALIZATION:
+   - plt (matplotlib.pyplot), sns (seaborn), go (plotly.graph_objects), px (plotly.express)
+   - animation (matplotlib.animation), FuncAnimation
+
+   STATISTICS & MATH:
+   - stats (scipy.stats), scipy, optimize, integrate, linalg, signal, spatial, special, fft
+   - sympy, math, random
+
+   MACHINE LEARNING:
+   - sklearn, metrics, preprocessing, model_selection
+   - xgb (xgboost), lgb (lightgbm)
+   - sm (statsmodels.api), tsa (statsmodels time series)
+
+   DEEP LEARNING (if installed):
+   - tf (tensorflow), torch (pytorch)
+
+   GRAPH ALGORITHMS:
+   - nx (networkx)
+
+   UTILITIES:
+   - json, re, datetime, time, itertools, functools, collections
+
+   🎨 OUTPUT FORMATS:
+   1. Matplotlib plots → Automatically saved as PNG with custom size/DPI
+   2. HTML output → Set _html_output = fig.to_html() for interactive plotly/tables
+   3. Custom figure size → Set _plot_figsize = (width, height) in inches
+   4. High resolution → Set _plot_dpi = 300 for publication quality
+
+   Examples:
    ```python
-   import numpy as np              # Already imported as 'np'
-   import pandas as pd             # Already imported as 'pd'
-   import polars as pl             # Already imported as 'pl'
-   import matplotlib.pyplot as plt # Already imported as 'plt'
-   import matplotlib.animation     # Already imported as 'animation'
-   import plotly.graph_objects as go  # Already imported as 'go'
-   import plotly.express as px     # Already imported as 'px'
-   import scipy                    # Already imported
-   from scipy import stats         # Already imported as 'stats'
-   import seaborn as sns           # Already imported as 'sns'
-   import sympy                    # Already imported
-   import sklearn                  # Already imported (scikit-learn)
-   import xgboost as xgb           # Already imported as 'xgb'
-   import lightgbm as lgb          # Already imported as 'lgb'
-   import statsmodels.api as sm    # Already imported as 'sm'
-   import math, random, itertools, functools, collections, datetime, time, re
+   # Custom size plot
+   _plot_figsize = (10, 6)
+   plt.plot([1,2,3], [4,5,6])
+   plt.title(r'My Plot')
+
+   # High-res plot
+   _plot_dpi = 300
+   plt.scatter(x, y)
+
+   # Interactive HTML
+   fig = px.scatter(df, x='age', y='salary')
+   _html_output = fig.to_html()
    ```
 
    🚨🚨🚨 CRITICAL: PYTHON RAW STRINGS FOR LATEX (MANDATORY - SYSTEM WILL FAIL WITHOUT THIS) 🚨🚨🚨

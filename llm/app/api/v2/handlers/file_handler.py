@@ -7,8 +7,28 @@ from app import logger
 
 router = APIRouter()
 
+ALLOWED_DIRECTORIES = {
+    "plots"     : Path("output/plots"),
+    "notebooks" : Path("output/notebooks"),
+    "uploads"   : Path("uploads/images"),
+}
 
-@router.get("/plots/{file_id}")
+MEDIA_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".svg": "image/svg+xml",
+    ".html": "text/html",
+    ".pdf": "application/pdf",
+    ".webp": "image/webp",
+    ".ipynb": "application/x-ipynb+json",
+    ".json": "application/json",
+    ".csv": "text/csv",
+    ".txt": "text/plain",
+}
+
+
+@router.get("/plots/{file_id}", deprecated=True)
 async def get_plot(file_id: str):
     try:
         if ".." in file_id or "/" in file_id or "\\" in file_id:
@@ -31,10 +51,15 @@ async def get_plot(file_id: str):
         logger.info(f"Serving plot file: {file_path}")
 
         media_type = "image/png"
-        if file_path.suffix.lower() in [".jpg", ".jpeg"]:
+        ext = file_path.suffix.lower()
+        if ext in [".jpg", ".jpeg"]:
             media_type = "image/jpeg"
-        elif file_path.suffix.lower() == ".svg":
+        elif ext == ".svg":
             media_type = "image/svg+xml"
+        elif ext == ".html":
+            media_type = "text/html"
+        elif ext == ".pdf":
+            media_type = "application/pdf"
 
         return FileResponse(
             path        = str(file_path)
@@ -88,7 +113,7 @@ async def get_uploaded_image(file_id: str):
         raise HTTPException(status_code=500, detail=f"Error serving file: {str(e)}")
 
 
-@router.get("/notebooks/{file_id}")
+@router.get("/notebooks/{file_id}", deprecated=True)
 async def get_notebook(file_id: str):
     try:
         if ".." in file_id or "/" in file_id or "\\" in file_id:
@@ -120,4 +145,51 @@ async def get_notebook(file_id: str):
         raise
     except Exception as e:
         logger.error(f"Error serving notebook: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Error serving file: {str(e)}")
+
+
+@router.get("/{directory}/{file_id}")
+async def get_ds_file(directory: str, file_id: str):
+    """
+    Unified endpoint to serve any DS agent generated file.
+
+    Supports:
+    - /plots/{file_id} - Images (PNG, JPG, SVG), HTML visualizations, PDFs
+    - /notebooks/{file_id} - Jupyter notebooks (.ipynb)
+    - /uploads/{file_id} - Uploaded images
+    """
+    try:
+        if ".." in file_id or "/" in file_id or "\\" in file_id:
+            raise HTTPException(status_code=400, detail="Invalid file ID")
+
+        if directory not in ALLOWED_DIRECTORIES:
+            raise HTTPException(status_code=400, detail=f"Invalid directory: {directory}")
+
+        base_dir    = ALLOWED_DIRECTORIES[directory].resolve()
+        file_path   = base_dir / file_id
+
+        if not file_path.exists():
+            raise HTTPException(status_code=404, detail=f"File not found: {file_id}")
+
+        if not file_path.is_file():
+            raise HTTPException(status_code=400, detail="Invalid file path")
+
+        try:
+            file_path.resolve().relative_to(base_dir.resolve())
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid file path")
+
+        ext         = file_path.suffix.lower()
+        media_type  = MEDIA_TYPES.get(ext, "application/octet-stream")
+
+        return FileResponse(
+            path        = str(file_path)
+            , media_type= media_type
+            , filename  = file_id
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error serving file from {directory}: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Error serving file: {str(e)}")

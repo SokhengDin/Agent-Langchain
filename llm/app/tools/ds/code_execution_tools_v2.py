@@ -109,9 +109,32 @@ class CodeExecutionTools:
             import scipy.stats as scipy_stats
 
             try:
+                import scipy.optimize as scipy_optimize
+                import scipy.integrate as scipy_integrate
+                import scipy.linalg as scipy_linalg
+                import scipy.signal as scipy_signal
+                import scipy.spatial as scipy_spatial
+                import scipy.special as scipy_special
+                import scipy.fft as scipy_fft
+            except ImportError:
+                scipy_optimize = None
+                scipy_integrate = None
+                scipy_linalg = None
+                scipy_signal = None
+                scipy_spatial = None
+                scipy_special = None
+                scipy_fft = None
+
+            try:
                 sklearn = __import__('sklearn')
+                from sklearn import metrics as sklearn_metrics
+                from sklearn import preprocessing as sklearn_preprocessing
+                from sklearn import model_selection as sklearn_model_selection
             except (ImportError, Exception):
                 sklearn = None
+                sklearn_metrics = None
+                sklearn_preprocessing = None
+                sklearn_model_selection = None
 
             try:
                 xgboost = __import__('xgboost')
@@ -130,9 +153,11 @@ class CodeExecutionTools:
             try:
                 statsmodels = __import__('statsmodels')
                 import statsmodels.api as sm_api
+                from statsmodels import tsa as statsmodels_tsa
             except (ImportError, Exception):
                 statsmodels = None
                 sm_api = None
+                statsmodels_tsa = None
 
             try:
                 polars = __import__('polars')
@@ -140,6 +165,26 @@ class CodeExecutionTools:
             except (ImportError, Exception):
                 polars = None
                 pl = None
+
+            try:
+                import networkx as nx
+            except ImportError:
+                nx = None
+
+            try:
+                import tensorflow as tf
+            except ImportError:
+                tf = None
+
+            try:
+                import torch
+            except ImportError:
+                torch = None
+
+            try:
+                import json
+            except ImportError:
+                json = None
 
             local_vars = {
                 'np'            : __import__('numpy')
@@ -154,16 +199,30 @@ class CodeExecutionTools:
                 , 'px'          : px
                 , 'scipy'       : __import__('scipy')
                 , 'stats'       : scipy_stats
+                , 'optimize'    : scipy_optimize
+                , 'integrate'   : scipy_integrate
+                , 'linalg'      : scipy_linalg
+                , 'signal'      : scipy_signal
+                , 'spatial'     : scipy_spatial
+                , 'special'     : scipy_special
+                , 'fft'         : scipy_fft
                 , 'seaborn'     : __import__('seaborn')
                 , 'sns'         : __import__('seaborn')
                 , 'sympy'       : __import__('sympy')
                 , 'sklearn'     : sklearn
+                , 'metrics'     : sklearn_metrics
+                , 'preprocessing': sklearn_preprocessing
+                , 'model_selection': sklearn_model_selection
                 , 'xgboost'     : xgboost
                 , 'xgb'         : xgb
                 , 'lightgbm'    : lightgbm
                 , 'lgb'         : lgb
                 , 'statsmodels' : statsmodels
                 , 'sm'          : sm_api
+                , 'tsa'         : statsmodels_tsa
+                , 'nx'          : nx
+                , 'tf'          : tf
+                , 'torch'       : torch
                 , 'math'        : __import__('math')
                 , 'random'      : __import__('random')
                 , 'itertools'   : __import__('itertools')
@@ -172,6 +231,7 @@ class CodeExecutionTools:
                 , 'datetime'    : __import__('datetime')
                 , 'time'        : __import__('time')
                 , 're'          : __import__('re')
+                , 'json'        : json
             }
 
             exec(code, local_vars, local_vars)
@@ -183,16 +243,29 @@ class CodeExecutionTools:
             stderr_text = stderr_capture.getvalue()
 
             has_plots = len(plt_exec.get_fignums()) > 0
+            html_output = None
 
             if has_plots:
-                plt_exec.savefig(plot_path, dpi=150, bbox_inches='tight')
+                dpi = local_vars.get('_plot_dpi', 150)
+                figsize = local_vars.get('_plot_figsize', None)
+
+                if figsize:
+                    for fig_num in plt_exec.get_fignums():
+                        fig = plt_exec.figure(fig_num)
+                        fig.set_size_inches(figsize[0], figsize[1])
+
+                plt_exec.savefig(plot_path, dpi=dpi, bbox_inches='tight')
                 plt_exec.close('all')
+
+            if '_html_output' in local_vars and local_vars['_html_output']:
+                html_output = local_vars['_html_output']
 
             result_queue.put({
                 'success': True,
                 'stdout': stdout_text,
                 'stderr': stderr_text,
-                'has_plots': has_plots
+                'has_plots': has_plots,
+                'html_output': html_output
             })
 
         except Exception as e:
@@ -214,10 +287,39 @@ class CodeExecutionTools:
         , runtime   : ToolRuntime[None, DSAgentState] = None
     ) -> Dict[str, Any]:
         """
-        Execute Python code with pre-imported scientific libraries using multiprocessing for safe timeout.
+        Execute Python code with comprehensive data science libraries for math, statistics, ML, and visualization.
 
-        Pre-imported: np, pd, pl (polars), plt, matplotlib, scipy, stats, sns, sympy, sklearn, xgb, lgb, sm (statsmodels), math, random
-        Automatically saves and returns URLs for matplotlib plots.
+        Pre-imported libraries:
+        - Data: np (numpy), pd (pandas), pl (polars)
+        - Viz: plt (matplotlib), sns (seaborn), go/px (plotly)
+        - Stats: stats, scipy, optimize, integrate, linalg, signal, spatial, special, fft
+        - Math: math, sympy, random
+        - ML: sklearn, metrics, preprocessing, model_selection, xgb, lgb, sm, tsa
+        - DL: tf (tensorflow), torch (pytorch)
+        - Graph: nx (networkx)
+        - Utils: json, re, datetime, time, itertools, functools, collections
+
+        Capabilities:
+        - Statistical analysis and hypothesis testing
+        - Optimization and numerical integration
+        - Signal processing and FFT
+        - Machine learning models and evaluation
+        - Time series analysis
+        - Graph algorithms
+        - Deep learning (if installed)
+        - Mathematical symbolic computation
+        - HTML output for interactive visualizations
+
+        Output formats:
+        - Matplotlib plots: Automatically saved as PNG and returns URL
+        - HTML output: Set _html_output variable to HTML string (for plotly, interactive tables, etc.)
+        - Example: _html_output = fig.to_html() for plotly figures
+
+        Plot customization:
+        - Control figure size: Set _plot_figsize = (width, height) in inches. Example: _plot_figsize = (10, 6)
+        - Control resolution: Set _plot_dpi = value. Example: _plot_dpi = 300 for high-res
+        - Default: Auto size with 150 DPI
+
         Max execution: 30s, 10 calls per conversation.
 
         Security: No system commands, file ops, network access, or dangerous functions.
@@ -272,8 +374,8 @@ class CodeExecutionTools:
             plot_filename   = f"code_execution_{timestamp}.png"
             plot_path       = str(output_dir / plot_filename)
 
-            result_queue = Queue()
-            process = Process(target=CodeExecutionTools._execute_in_process, args=(code, result_queue, plot_path))
+            result_queue    = Queue()
+            process         = Process(target=CodeExecutionTools._execute_in_process, args=(code, result_queue, plot_path))
             process.start()
             process.join(timeout=MAX_EXECUTION_TIME)
 
@@ -340,6 +442,22 @@ class CodeExecutionTools:
                         runtime.stream_writer(f"✅ Plot saved: {file_url}")
 
                     logger.info(f"Plot saved from code execution: {plot_path}")
+
+                if result.get('html_output'):
+                    html_filename = f"code_execution_{timestamp}.html"
+                    html_path = str(output_dir / html_filename)
+
+                    with open(html_path, 'w', encoding='utf-8') as f:
+                        f.write(result['html_output'])
+
+                    html_url = f"{settings.FRONT_API_BASE_URL}/api/v2/files/plots/{html_filename}"
+                    response["data"]["html_path"]   = html_path
+                    response["data"]["html_url"]    = html_url
+
+                    if runtime and runtime.stream_writer:
+                        runtime.stream_writer(f"✅ HTML saved: {html_url}")
+
+                    logger.info(f"HTML saved from code execution: {html_path}")
 
                 if runtime:
                     runtime.state["code_execution_count"] = execution_count + 1
