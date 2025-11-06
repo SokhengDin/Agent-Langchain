@@ -7,7 +7,13 @@ from langchain_ollama import ChatOllama
 from langgraph.checkpoint.postgres.aio import AsyncPostgresSaver
 
 from langchain.agents import create_agent
-from langchain.agents.middleware import SummarizationMiddleware, ToolCallLimitMiddleware, ToolRetryMiddleware
+from langchain.agents.middleware import (
+    SummarizationMiddleware
+    , ToolCallLimitMiddleware
+    , ToolRetryMiddleware
+    , ContextEditingMiddleware
+    , ClearToolUsesEdit
+)
 
 from app.tools.ds.data_tools import DataTools
 from app.tools.ds.stats_tools import StatsTools
@@ -123,6 +129,18 @@ class DSAgentService:
                 , self.tool_context_middleware
                 , self.code_memory_middleware
                 , handle_json_parsing_errors
+                , ContextEditingMiddleware(
+                    edits=[
+                        ClearToolUsesEdit(
+                            trigger                 = 60000
+                            , clear_at_least        = 10000
+                            , keep                  = 5
+                            , clear_tool_inputs     = False
+                            , exclude_tools         = ["read_csv", "read_excel"]
+                            , placeholder           = "[output cleared to save context]"
+                        )
+                    ]
+                )
                 , SummarizationMiddleware(
                     model                       = self.summary_llm
                     , max_tokens_before_summary = 80000

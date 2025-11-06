@@ -46,6 +46,25 @@ class CodeGenerationTools:
             if runtime and runtime.stream_writer:
                 runtime.stream_writer("🤖 Generating code with specialized coding model...")
 
+            code_history        = runtime.state.get("code_history", []) if runtime else []
+            loaded_datasets     = runtime.state.get("loaded_datasets", {}) if runtime else {}
+
+            recent_codes = [h["code"] for h in code_history[-3:]] if code_history else []
+
+            dataset_context = ""
+            if loaded_datasets:
+                dataset_info = []
+                for filepath, info in loaded_datasets.items():
+                    cols = info.get("columns", [])
+                    dataset_info.append(f"- {filepath}: {info.get('shape', 'unknown')} with columns: {', '.join(cols[:5])}")
+                dataset_context = f"\n\n🔄 LOADED DATASETS:\n" + "\n".join(dataset_info)
+
+            recent_code_context = ""
+            if recent_codes:
+                recent_code_context = f"\n\n🔄 RECENT CODE EXECUTIONS (reuse patterns):\n" + "\n".join(
+                    f"```python\n{code}\n```" for code in recent_codes
+                )
+
             coder_llm = ChatOllama(
                 base_url    = settings.OLLAMA_BASE_URL
                 , model     = "qwen3-coder:30b"
@@ -59,14 +78,15 @@ Task: {task_description}
 
 Language: {language}
 
-{f"Context: {context}" if context else ""}
+{f"Context: {context}" if context else ""}{dataset_context}{recent_code_context}
 
 Requirements:
-1. Generate ONLY executable code, no explanations before or after
-2. Use best practices and proper error handling
-3. Add clear comments explaining key logic
-4. For Python: use type hints
-5. Make code production-ready
+1. REUSE patterns from recent code if applicable (build incrementally, don't reinvent)
+2. If dataset is already loaded (see LOADED DATASETS above), use the same file path
+3. Generate ONLY executable code, no explanations before or after
+4. Use best practices and proper error handling
+5. For Python: use type hints
+6. Make code production-ready
 
 🚨 CRITICAL - For matplotlib/plotting code:
 - NEVER use plt.show() - raises NotImplementedError in headless environment

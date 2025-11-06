@@ -1,6 +1,10 @@
 from typing import Dict, Any
 import time
 import re
+import hashlib
+import json
+import os
+from pathlib import Path
 
 from langchain.agents.middleware import AgentMiddleware
 from langchain_core.messages import ToolMessage
@@ -14,6 +18,23 @@ class DSCodeMemoryMiddleware(AgentMiddleware):
     def __init__(self, max_history_size: int = 20):
         super().__init__()
         self.max_history_size = max_history_size
+
+    def before_tool(
+        self
+        , state     : DSAgentState
+        , tool_call : Dict
+        , runtime
+    ) -> Dict[str, Any] | None:
+        try:
+            tool_name = tool_call.get("name")
+
+            if tool_name in ["correlation_analysis", "hypothesis_test", "distribution_analysis"]:
+                return self._check_cached_result(state, tool_call)
+
+        except Exception as e:
+            logger.error(f"Error checking cache in code memory middleware: {str(e)}")
+
+        return None
 
     def after_tool(
         self
@@ -30,6 +51,9 @@ class DSCodeMemoryMiddleware(AgentMiddleware):
 
             elif tool_name in ["read_csv", "read_excel"]:
                 return self._track_dataset_load(state, tool_call, result)
+
+            elif tool_name in ["correlation_analysis", "hypothesis_test", "distribution_analysis"]:
+                return self._cache_analysis_result(state, tool_call, result)
 
         except Exception as e:
             logger.error(f"Error in code memory middleware: {str(e)}")
@@ -100,15 +124,29 @@ class DSCodeMemoryMiddleware(AgentMiddleware):
         if not file_path:
             return None
 
+        file_hash       = self._get_file_hash(file_path)
+        loaded_datasets = state.get("loaded_datasets", {})
+
+        existing_info   = loaded_datasets.get(file_path, {})
+        existing_hash   = existing_info.get("file_hash", "")
+
+        if existing_hash and existing_hash != file_hash:
+            logger.warning(f"Dataset changed: {file_path} (invalidating cache)")
+            computed_results = state.get("computed_results", {})
+            computed_results = {
+                k: v for k, v in computed_results.items()
+                if file_path not in json.dumps(k)
+            }
+
         dataset_info = {
             "shape"     : data.get("shape", "unknown")
             , "columns" : data.get("columns", [])
             , "dtypes"  : data.get("dtypes", {})
             , "loaded_at": time.time()
+            , "file_hash": file_hash
         }
 
-        loaded_datasets                 = state.get("loaded_datasets", {})
-        loaded_datasets[file_path]      = dataset_info
+        loaded_datasets[file_path] = dataset_info
 
         logger.info(f"Tracked dataset load: {file_path} with shape {dataset_info['shape']}")
 
@@ -124,3 +162,74 @@ class DSCodeMemoryMiddleware(AgentMiddleware):
         found_vars  = [v for v in assignments if v in common_vars or v.startswith('df_')]
 
         return found_vars[:10]
+
+    def _generate_cache_key(self, tool_call: Dict) -> str:
+        tool_name   = tool_call.get("name", "")
+        args        = tool_call.get("args", {})
+
+        cache_data  = {
+            "tool": tool_name
+            , "args": {k: v for k, v in sorted(args.items())}
+        }
+
+        cache_str   = json.dumps(cache_data, sort_keys=True)
+        return hashlib.md5(cache_str.encode()).hexdigest()
+
+    def _check_cached_result(
+        self
+        , state     : DSAgentState
+        , tool_call : Dict
+    ) -> Dict[str, Any] | None:
+        cache_key       = self._generate_cache_key(tool_call)
+        computed_results= state.get("computed_results", {})
+
+        if cache_key in computed_results:
+            cached = computed_results[cache_key]
+            logger.info(f"Cache hit for {tool_call.get('name')}")
+
+            return {
+                "skip_tool": True
+                , "result": cached["result"]
+            }
+
+        return None
+
+    def _cache_analysis_result(
+        self
+        , state     : DSAgentState
+        , tool_call : Dict
+        , result    : Any
+    ) -> Dict[str, Any] | None:
+        if not result or not isinstance(result, dict):
+            return None
+
+        status = result.get("status", 500)
+        if status != 200:
+            return None
+
+        cache_key           = self._generate_cache_key(tool_call)
+        computed_results    = state.get("computed_results", {})
+
+        computed_results[cache_key] = {
+            "result"    : result
+            , "timestamp": time.time()
+        }
+
+        logger.info(f"Cached result for {tool_call.get('name')}")
+
+        return {"computed_results": computed_results}
+
+    def _get_file_hash(self, file_path: str) -> str:
+        try:
+            path = Path(file_path)
+            if not path.exists():
+                return ""
+
+            stat_info   = path.stat()
+            hash_data   = f"{stat_info.st_size}_{stat_info.st_mtime}"
+
+            return hashlib.md5(hash_data.encode()).hexdigest()
+
+        except Exception as e:
+            logger.error(f"Error getting file hash for {file_path}: {str(e)}")
+            return ""
