@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu24.04
+FROM nvidia/cuda:12.6.0-cudnn-devel-ubuntu24.04
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
