@@ -25,6 +25,7 @@ from app.tools.ds.theoretical_tools import TheoreticalTools
 from app.tools.ds.code_execution_tools_v2 import CodeExecutionTools
 from app.tools.ds.code_generation_tools import CodeGenerationTools
 from app.tools.ds.notebook_tools import NotebookTools
+from app.tools.ds.latex_validator_tool import LaTeXValidatorTools
 
 from app.states.ds_agent_state import DSAgentState
 from app.prompts.ds_prompt import DSPrompt
@@ -89,12 +90,14 @@ class DSAgentService:
 
             , NotebookTools.generate_notebook
             , NotebookTools.create_analysis_notebook
+
+            , LaTeXValidatorTools.validate_latex_formatting
         ]
 
         self.llm = ChatOllama(
             base_url    = settings.OLLAMA_BASE_URL
-            , model     = "qwen3:14b"
-            , temperature= 0.3
+            , model     = "gpt-oss:20b"
+            , temperature= 0.0
             , num_ctx   = 131072
             , num_predict= 8192
             , reasoning = True

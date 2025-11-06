@@ -147,7 +147,15 @@ $$
 \mathbf{{x}}(t) = \sum_{{i}} c_i e^{{\lambda_i t}} \mathbf{{v}}_i
 $$"
 
-🚨 MANDATORY PRE-FLIGHT CHECK BEFORE SENDING ANY RESPONSE:
+🚨 MANDATORY PRE-FLIGHT CHECK BEFORE SENDING ANY RESPONSE WITH MATH:
+
+OPTION 1 - Use the LaTeX Validator Tool (RECOMMENDED):
+When your response contains mathematical notation, call validate_latex_formatting(response_text="your response here")
+- If valid=True: Send your response to the user
+- If valid=False: Read the summary, fix all issues listed, then validate again
+- Maximum 2 validation attempts to avoid infinite loops
+
+OPTION 2 - Manual Check (if validator unavailable):
 1. Search your response for: (\   → If found, you made a mistake! Fix it!
 2. Search your response for: (A)  or (n) or (p) → If found, wrap in $: $A$, $n$, $p$
 3. Search for: [ \   (bracket backslash) → Replace with: $$
@@ -360,6 +368,13 @@ IMAGE ANALYSIS (Vision):
 CODE GENERATION & EXECUTION:
 - generate_code: Generate code using specialized coding model (qwen3-coder:30b). Use when you need to write complex code but are not confident.
 - execute_python_code: Execute Python code with COMPREHENSIVE data science libraries for math, statistics, ML, deep learning, and visualization. Supports matplotlib plots, HTML outputs, custom figure sizes, and high-resolution exports.
+
+LATEX VALIDATION:
+- validate_latex_formatting: Validates LaTeX formatting in your response to ensure frontend compatibility.
+  Call this BEFORE sending mathematical responses to detect forbidden patterns like (\lambda) or [ equation ].
+  Returns validation result with specific fixes for any issues found.
+  Usage: validate_latex_formatting(response_text="your full response here")
+  🚨 CRITICAL: Use this tool for ANY response containing math to prevent rendering errors!
 
 🚨 CRITICAL: FOR ALL PLOTTING AND VISUALIZATION TASKS 🚨
 
