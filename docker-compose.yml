@@ -75,6 +75,7 @@ services:
       nofile:
         soft: 65535
         hard: 65535
+    runtime: nvidia
     environment:
       - API_BASE_URL=http://hotel_agent_api:8000
       - FRONT_API_BASE_URL=https://ams-agent.redalab.org
@@ -103,13 +104,6 @@ services:
       - llm_logs:/app/logs
       - llm_temp:/app/temp
       - llm_cache:/app/.cache
-    deploy:
-    resources:
-      reservations:
-        devices:
-          - driver: nvidia
-            count: all
-            capabilities: [gpu]
     networks:
       - ams_network
 
