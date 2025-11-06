@@ -15,7 +15,7 @@ class DSVisionTools:
 
     vision_model = ChatOllama(
         base_url    = settings.OLLAMA_BASE_URL
-        , model     = "qwen3-vl:8b"
+        , model     = "gemma3:4b"
         , temperature= 0.0
     )
 
