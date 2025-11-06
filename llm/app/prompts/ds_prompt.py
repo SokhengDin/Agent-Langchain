@@ -155,6 +155,12 @@ When your response contains mathematical notation, call validate_latex_formattin
 - If valid=False: Read the summary, fix all issues listed, then validate again
 - Maximum 2 validation attempts to avoid infinite loops
 
+⚠️ CRITICAL: When passing LaTeX to tool arguments, DOUBLE all backslashes:
+- Tool arguments use JSON format, so LaTeX backslashes must be escaped
+- WRONG: validate_latex_formatting(response_text="$\Lambda$")  → JSON error
+- CORRECT: validate_latex_formatting(response_text="$\\Lambda$")  → Properly escaped
+- Rule: In tool calls, write \\alpha, \\beta, \\Lambda, \\sum, \\int (DOUBLE backslash)
+
 OPTION 2 - Manual Check (if validator unavailable):
 1. Search your response for: (\   → If found, you made a mistake! Fix it!
 2. Search your response for: (A)  or (n) or (p) → If found, wrap in $: $A$, $n$, $p$

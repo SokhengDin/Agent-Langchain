@@ -21,7 +21,37 @@ async def handle_json_parsing_errors(request: ModelRequest, handler) -> ModelRes
             match = re.search(r"invalid character '(.?)' in string escape code", error_str)
             invalid_char = match.group(1) if match else "unknown"
 
-            feedback = f"""⚠️ JSON Parsing Error in Tool Call
+            is_latex_error = invalid_char.isalpha() and invalid_char.isupper()
+
+            if is_latex_error:
+                feedback = f"""⚠️ JSON Parsing Error - LaTeX Escaping Issue
+
+Your tool call had invalid JSON formatting. The error was:
+- Invalid escape sequence '\\{invalid_char}' in the JSON argument
+
+**Root Cause:**
+You passed LaTeX commands like \\Lambda, \\Sigma, \\Delta in the tool argument, but LaTeX backslashes must be DOUBLE-ESCAPED in JSON.
+
+**Example of the Problem:**
+- ❌ WRONG: {{"response_text": "...$\\Lambda$..."}}  → Creates invalid escape \\L
+- ✅ CORRECT: {{"response_text": "...$\\\\Lambda$..."}}  → Properly escaped
+
+**Solution:**
+When calling tools with arguments containing LaTeX:
+1. **Double all backslashes**: \\alpha → \\\\alpha, \\Lambda → \\\\Lambda
+2. **In tool arguments, LaTeX requires 2 backslashes**: $\\\\mu$, $\\\\sigma^2$, $e^{{\\\\Lambda t}}$
+
+**Your Next Step:**
+Retry the tool call with DOUBLE backslashes in all LaTeX commands within the tool argument.
+
+Example:
+- Change: validate_latex_formatting(response_text="$\\Lambda$")
+- To: validate_latex_formatting(response_text="$\\\\Lambda$")
+
+Try again now with proper escaping."""
+
+            else:
+                feedback = f"""⚠️ JSON Parsing Error in Tool Call
 
 Your tool call had invalid JSON formatting. The error was:
 - Invalid escape sequence '\\{invalid_char}' in the JSON
