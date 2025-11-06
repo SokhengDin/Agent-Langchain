@@ -49,13 +49,13 @@ class CodeGenerationTools:
             code_history        = runtime.state.get("code_history", []) if runtime else []
             loaded_datasets     = runtime.state.get("loaded_datasets", {}) if runtime else {}
 
-            recent_codes = [h["code"] for h in code_history[-3:]] if code_history else []
+            recent_codes        = [h["code"] for h in code_history[-3:]] if code_history else []
 
-            dataset_context = ""
+            dataset_context     = ""
             if loaded_datasets:
-                dataset_info = []
+                dataset_info    = []
                 for filepath, info in loaded_datasets.items():
-                    cols = info.get("columns", [])
+                    cols        = info.get("columns", [])
                     dataset_info.append(f"- {filepath}: {info.get('shape', 'unknown')} with columns: {', '.join(cols[:5])}")
                 dataset_context = f"\n\n🔄 LOADED DATASETS:\n" + "\n".join(dataset_info)
 

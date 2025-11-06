@@ -199,9 +199,9 @@ class DSAgentService:
                 message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
             config = {
-                "configurable": {"thread_id": thread_id},
-                "recursion_limit": 100,
-                "max_concurrency": 5
+                "configurable"      : {"thread_id": thread_id},
+                "recursion_limit"   : 100,
+                "max_concurrency"   : 5
             }
 
             state = {"messages": [HumanMessage(content=message_content)]}

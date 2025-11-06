@@ -25,8 +25,8 @@ MAX_EXECUTIONS_PER_CONVERSATION = 10
 
 
 class CodeExecutionInput(BaseModel):
-    code: str = Field(
-        description=(
+    code: str       = Field(
+        description =(
             "Python code to execute. "
             "CRITICAL: Use raw strings (r'...' or r\"...\") for ALL strings containing backslashes. "
             "Examples: "
@@ -38,8 +38,8 @@ class CodeExecutionInput(BaseModel):
     )
 
     save_plot: bool = Field(
-        default=True,
-        description="Whether to automatically save matplotlib plots and return their URL"
+        default     = True,
+        description = "Whether to automatically save matplotlib plots and return their URL"
     )
 
 
