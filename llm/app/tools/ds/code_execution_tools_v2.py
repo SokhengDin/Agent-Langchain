@@ -422,11 +422,22 @@ class CodeExecutionTools:
                 if runtime and runtime.stream_writer:
                     runtime.stream_writer("✅ Code executed successfully")
 
+                logger.info("=" * 80)
+                logger.info("CODE EXECUTION SUCCESSFUL")
+                logger.info("=" * 80)
+                logger.info(f"Executed code:\n{code}")
+                if result['stdout']:
+                    logger.info(f"Output:\n{result['stdout']}")
+                if result['has_plots']:
+                    logger.info(f"Plot generated: {plot_filename}")
+                logger.info("=" * 80)
+
                 response = {
                     "status"    : 200
                     , "message" : "Code executed successfully"
                     , "data"    : {
-                        "stdout"            : result['stdout'] if result['stdout'] else None
+                        "code"              : code
+                        , "stdout"          : result['stdout'] if result['stdout'] else None
                         , "stderr"          : result['stderr'] if result['stderr'] else None
                         , "execution_count" : execution_count + 1
                     }
