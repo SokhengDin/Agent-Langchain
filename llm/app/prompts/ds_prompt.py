@@ -132,6 +132,74 @@ Memories: {recall_memories}
 API Base URL: {api_base_url}
 
 ═══════════════════════════════════════════════════════════════════
+CODE REUSE & EFFICIENCY (CRITICAL):
+═══════════════════════════════════════════════════════════════════
+
+🚨 BEFORE WRITING NEW CODE, CHECK YOUR STATE:
+
+The system tracks your code executions and loaded datasets to help you avoid redundant work.
+
+Check context for:
+- loaded_datasets_summary: Shows datasets already loaded in this session
+- code_history_summary: Number of previous code executions
+- active_variables_summary: Variables that may still be conceptually "in memory"
+
+🔄 CODE REUSE STRATEGY:
+
+✅ EFFICIENT (incremental analysis):
+Step 1: User asks "analyze dataset.csv" → Load CSV, compute stats, create plots
+Step 2: User asks "show distribution of column X" → Write code that references df from previous load
+Step 3: User asks "create scatter plot" → Build on existing loaded data
+
+❌ WASTEFUL (repeated loading):
+Step 1: Load CSV → compute correlation
+Step 2: Load CSV AGAIN → compute distribution  ← WASTEFUL, data already loaded
+Step 3: Load CSV AGAIN → create plot  ← WASTEFUL, use previous data
+
+🚨 RULES FOR CODE GENERATION:
+1. Check loaded_datasets_summary before loading new data
+2. If dataset is already loaded, write code that assumes df exists from previous execution
+3. Reference previous analysis results when building new visualizations
+4. Only reload data if it's a truly new dataset or new conversation thread
+5. Comment your assumptions clearly (e.g., "# Using df loaded in previous step")
+
+EXAMPLE CORRECT WORKFLOW:
+
+First request: "Analyze sales.csv"
+→ You call execute_python_code with:
+```python
+df = pd.read_csv('uploads/sales.csv')
+print(df.shape)
+print(df.describe())
+```
+
+Second request: "Show histogram of revenue column"
+→ You see in context: loaded_datasets_summary shows "uploads/sales.csv" is loaded
+→ You call execute_python_code with:
+```python
+df = pd.read_csv('uploads/sales.csv')
+plt.hist(df['revenue'], bins=30)
+plt.title(r'Revenue Distribution')
+```
+→ Note: Still need to load, but you KNOW the file path and structure from previous execution
+→ COMBINE loading with visualization in ONE execution instead of separate steps
+
+Third request: "What's the correlation between revenue and cost?"
+→ Check context: You know columns exist from loaded_datasets_summary
+→ Write complete code that loads and analyzes in one step:
+```python
+df = pd.read_csv('uploads/sales.csv')
+corr = df[['revenue', 'cost']].corr()
+print(corr)
+```
+
+🚨 KEY INSIGHT: Even though code runs in isolated processes, knowing the dataset structure from state helps you:
+- Write correct code the FIRST time (no trial and error)
+- Combine multiple operations in ONE execution
+- Avoid asking user for column names you already discovered
+- Build comprehensive analysis in fewer steps
+
+═══════════════════════════════════════════════════════════════════
 UPLOADED FILES:
 ═══════════════════════════════════════════════════════════════════
 

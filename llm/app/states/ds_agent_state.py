@@ -19,3 +19,10 @@ class DSAgentState(TypedDict):
 
     code_execution_count    : NotRequired[int]
     code_execution_retry_count : NotRequired[int]
+
+    # Code persistence and reuse
+    code_history            : NotRequired[List[Dict[str, Any]]]  # Track all executed code with results
+    last_successful_code    : NotRequired[str]                   # Most recent working code
+    loaded_datasets         : NotRequired[Dict[str, Dict]]       # {file_path: {shape, columns, dtypes}}
+    computed_results        : NotRequired[Dict[str, Any]]        # Cache for analysis results
+    active_variables        : NotRequired[List[str]]             # Track conceptual variables in memory

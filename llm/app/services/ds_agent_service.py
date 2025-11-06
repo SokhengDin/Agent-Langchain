@@ -29,6 +29,7 @@ from app.middleware.ds.ds_tool_context_middleware import DSToolContextMiddleware
 from app.middleware.ds.ds_prompt_middleware import create_ds_dynamic_prompt
 from app.middleware.ds.ds_code_execution_middleware import handle_code_execution_feedback
 from app.middleware.ds.ds_json_parser_middleware import handle_json_parsing_errors
+from app.middleware.ds.ds_code_memory_middleware import DSCodeMemoryMiddleware
 from app.middleware.tool_error_middleware import handle_tool_errors
 
 from app.core.config import settings
@@ -107,6 +108,7 @@ class DSAgentService:
         self.state_init_middleware      = DSStateInitMiddleware()
         self.context_middleware         = DSContextMiddleware()
         self.tool_context_middleware    = DSToolContextMiddleware()
+        self.code_memory_middleware     = DSCodeMemoryMiddleware(max_history_size=20)
         self.prompt_middleware          = create_ds_dynamic_prompt(self.prompt)
 
         logger.info(f"Registered {len(self.tools)} tools for DS Agent")
@@ -119,6 +121,7 @@ class DSAgentService:
                 self.state_init_middleware
                 , self.context_middleware
                 , self.tool_context_middleware
+                , self.code_memory_middleware
                 , handle_json_parsing_errors
                 , SummarizationMiddleware(
                     model                       = self.summary_llm
