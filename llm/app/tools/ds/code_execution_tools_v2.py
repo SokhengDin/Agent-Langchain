@@ -374,10 +374,14 @@ class CodeExecutionTools:
             plot_filename   = f"code_execution_{timestamp}.png"
             plot_path       = str(output_dir / plot_filename)
 
+            start_time      = time.time()
+
             result_queue    = Queue()
             process         = Process(target=CodeExecutionTools._execute_in_process, args=(code, result_queue, plot_path))
             process.start()
             process.join(timeout=MAX_EXECUTION_TIME)
+
+            execution_time  = time.time() - start_time
 
             if process.is_alive():
                 process.terminate()
@@ -420,11 +424,12 @@ class CodeExecutionTools:
                     }
 
                 if runtime and runtime.stream_writer:
-                    runtime.stream_writer("✅ Code executed successfully")
+                    runtime.stream_writer(f"✅ Code executed successfully in {execution_time:.2f}s")
 
                 logger.info("=" * 80)
                 logger.info("CODE EXECUTION SUCCESSFUL")
                 logger.info("=" * 80)
+                logger.info(f"Execution time: {execution_time:.2f} seconds")
                 logger.info(f"Executed code:\n{code}")
                 if result['stdout']:
                     logger.info(f"Output:\n{result['stdout']}")
@@ -440,6 +445,7 @@ class CodeExecutionTools:
                         , "stdout"          : result['stdout'] if result['stdout'] else None
                         , "stderr"          : result['stderr'] if result['stderr'] else None
                         , "execution_count" : execution_count + 1
+                        , "execution_time"  : round(execution_time, 2)
                     }
                 }
 

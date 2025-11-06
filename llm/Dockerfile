@@ -1,4 +1,4 @@
-FROM python:3.12-slim
+FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
