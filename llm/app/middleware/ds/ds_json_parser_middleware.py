@@ -50,9 +50,9 @@ Please retry the tool call with:
 
 Try again now with the corrected formatting."""
 
-            return ModelResponse(
-                messages=[AIMessage(content=feedback)]
-                , state_updates={}
+            from langgraph.types import Command
+            return Command(
+                update={"messages": [AIMessage(content=feedback)]}
             )
 
         raise

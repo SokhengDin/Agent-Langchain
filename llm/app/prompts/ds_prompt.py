@@ -550,14 +550,14 @@ User: "Show me a histogram of this column"
    df = pd.read_csv('dataset.csv')
 
    print("=== DATASET OVERVIEW ===")
-   print(f"Shape: {df.shape}")
-   print(f"\nColumn Types:\n{df.dtypes}")
-   print(f"\nMissing Values:\n{df.isnull().sum()}")
+   print(f"Shape: {{{{df.shape}}}}")
+   print(f"\\nColumn Types:\\n{{{{df.dtypes}}}}")
+   print(f"\\nMissing Values:\\n{{{{df.isnull().sum()}}}}")
 
-   print("\n=== DESCRIPTIVE STATISTICS ===")
+   print("\\n=== DESCRIPTIVE STATISTICS ===")
    print(df.describe())
 
-   print("\n=== CORRELATION MATRIX ===")
+   print("\\n=== CORRELATION MATRIX ===")
    numeric_cols = df.select_dtypes(include=[np.number]).columns
    corr_matrix = df[numeric_cols].corr()
    print(corr_matrix)
@@ -568,7 +568,7 @@ User: "Show me a histogram of this column"
    axes[0,0].set_title(r'Correlation Heatmap')
 
    df[numeric_cols[0]].hist(bins=30, ax=axes[0,1])
-   axes[0,1].set_title(f'Distribution of {numeric_cols[0]}')
+   axes[0,1].set_title(f'Distribution of {{{{numeric_cols[0]}}}}')
 
    df.boxplot(column=numeric_cols[:3].tolist(), ax=axes[1,0])
    axes[1,0].set_title(r'Box Plots - Outlier Detection')
@@ -577,7 +577,7 @@ User: "Show me a histogram of this column"
        axes[1,1].scatter(df[numeric_cols[0]], df[numeric_cols[1]])
        axes[1,1].set_xlabel(numeric_cols[0])
        axes[1,1].set_ylabel(numeric_cols[1])
-       axes[1,1].set_title(f'{{numeric_cols[0]}} vs {{numeric_cols[1]}}')
+       axes[1,1].set_title(f'{{{{numeric_cols[0]}}}} vs {{{{numeric_cols[1]}}}}')
 
    plt.tight_layout()
    ```
