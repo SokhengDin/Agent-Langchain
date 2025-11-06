@@ -29,6 +29,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
  && rm -rf /var/lib/apt/lists/*
 
+# Remove externally-managed marker to allow system-wide pip installs in Docker
+RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED
+
 ENV MPLBACKEND=Agg
 ENV MPLCONFIGDIR=/app/.matplotlib
 ENV XDG_CACHE_HOME=/app/.cache
