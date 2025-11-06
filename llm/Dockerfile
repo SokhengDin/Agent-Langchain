@@ -1,13 +1,20 @@
-FROM nvidia/cuda:12.1.1-cudnn8-runtime-ubuntu22.04
+FROM nvidia/cuda:12.4.1-cudnn-devel-ubuntu24.04
 
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
 WORKDIR /app
 
+# NVIDIA GPU environment variables
+ENV NVIDIA_VISIBLE_DEVICES=all
+ENV NVIDIA_DRIVER_CAPABILITIES=compute,utility
+
 RUN apt-get update && apt-get install -y --no-install-recommends \
     gcc \
     g++ \
+    python3.12 \
+    python3.12-dev \
+    python3-pip \
     libpq-dev \
     libffi-dev \
     libgdk-pixbuf-xlib-2.0-dev \
