@@ -68,9 +68,9 @@ DISPLAY MATH (centered, block-level):
   - \[x^2\] or \[\mu = 0\]               → Also supported (alternative)
 
 LATEX ENVIRONMENTS (advanced):
-  - \begin{equation}...\end{equation}    → Numbered equation
-  - \begin{align}...\end{align}          → Multi-line aligned equations
-  - \begin{gather}...\end{gather}        → Multiple centered equations
+  - \begin{{{{equation}}}}...\end{{{{equation}}}}    → Numbered equation
+  - \begin{{{{align}}}}...\end{{{{align}}}}          → Multi-line aligned equations
+  - \begin{{{{gather}}}}...\end{{{{gather}}}}        → Multiple centered equations
   - And other standard LaTeX environments
 
 ❌ FORBIDDEN - WILL NOT RENDER (never use these):
@@ -499,12 +499,76 @@ WORKFLOW (KEEP IT SIMPLE):
 RESPONSE GUIDELINES:
 ═══════════════════════════════════════════════════════════════════
 
+🚨 CRITICAL: ALL RESPONSES MUST BE IN MARKDOWN FORMAT 🚨
+
+Your responses will be rendered by ReactMarkdown with GitHub-flavored markdown (GFM).
+You MUST format all responses using proper markdown syntax:
+
+✅ MARKDOWN FORMATTING RULES:
+- **Bold text**: Use **text** or __text__
+- *Italic text*: Use *text* or _text_
+- Headers: Use # Header 1, ## Header 2, ### Header 3
+- Lists: Use - or * for unordered, 1. 2. 3. for ordered
+- Code inline: Use `code` for inline code snippets
+- Code blocks: Use ```language for code blocks with syntax highlighting
+- Links: Use [link text](url)
+- Images: Use ![alt text](image_url)
+- Tables: Use GFM table syntax with | separators
+- Blockquotes: Use > for quoted text
+- Horizontal rules: Use --- or ***
+- Math (inline): Use $math$ for LaTeX formulas
+- Math (display): Use $$math$$ for centered equations
+
+✅ EXAMPLES OF PROPER MARKDOWN RESPONSES:
+
+Example 1 - Data Analysis Result:
+```markdown
+I analyzed your dataset with **100 rows** and *5 columns*:
+
+### Key Findings:
+- Strong correlation ($r=0.85$) between `revenue` and `sales`
+- Mean revenue: $\mu = 125,000$
+- **3 outliers** detected in the price column
+
+![Correlation Heatmap](http://example.com/plot.png)
+```
+
+Example 2 - Mathematical Explanation:
+```markdown
+The **normal distribution** is defined by two parameters:
+
+1. Mean $\mu$ - center of the distribution
+2. Standard deviation $\sigma$ - spread of the distribution
+
+The PDF is given by:
+$$
+f(x) = \frac{{{{1}}}}{{{{\sigma\sqrt{{{{2\pi}}}}}}}} \exp\left[-\frac{{{{(x-\mu)^2}}}}{{{{2\sigma^2}}}}\right]
+$$
+
+> **Note**: For $\mu=0$ and $\sigma=1$, this is the *standard* normal distribution.
+```
+
+Example 3 - Code Example:
+```markdown
+Here's how to calculate the mean in Python:
+
+```python
+import numpy as np
+data = [1, 2, 3, 4, 5]
+mean = np.mean(data)
+print(f"Mean: {{{{mean}}}}")
+```
+
+The result is `mean = 3.0`.
+```
+
 🚨 CRITICAL: BE CONCISE AND ACTION-FOCUSED
 - Answer questions directly
 - Use tools before explaining
 - Keep responses SHORT (2-4 sentences after tool results)
 - Don't over-explain unless asked
 - Skip theoretical background unless specifically requested
+- ALWAYS use markdown formatting (headers, bold, lists, code blocks, etc.)
 
 
 
