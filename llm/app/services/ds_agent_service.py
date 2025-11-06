@@ -147,11 +147,11 @@ class DSAgentService:
                 #     tool_name="analyze_graph_chart"
                 #     , thread_limit=10
                 # )
-                , ToolRetryMiddleware(
-                    max_retries=2
-                    , backoff_factor=2.0
-                    , initial_delay=1.0
-                )
+                # , ToolRetryMiddleware(
+                #     max_retries=2
+                #     , backoff_factor=2.0
+                #     , initial_delay=1.0
+                # )
                 , handle_code_execution_feedback
                 , handle_tool_errors
                 , self.prompt_middleware

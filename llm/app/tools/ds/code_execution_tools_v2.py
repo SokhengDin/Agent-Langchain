@@ -15,12 +15,13 @@ from app import logger
 from app.core.config import settings
 from app.states.ds_agent_state import DSAgentState
 
+try:
+    multiprocessing.set_start_method('fork', force=False)
+except RuntimeError:
+    pass
 
 MAX_EXECUTION_TIME = 30
 MAX_EXECUTIONS_PER_CONVERSATION = 10
-
-# Don't import matplotlib at module level - it causes issues with multiprocessing
-# Each subprocess will import it fresh with the correct backend
 
 
 class CodeExecutionInput(BaseModel):
