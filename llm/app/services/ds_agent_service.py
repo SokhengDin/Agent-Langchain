@@ -94,7 +94,7 @@ class DSAgentService:
         self.llm = ChatOllama(
             base_url    = settings.OLLAMA_BASE_URL
             , model     = "gpt-oss:20b"
-            , temperature= 0.0
+            , temperature= 0.3
             , num_ctx   = 131072
             , num_predict= 8192
             , reasoning = True
@@ -193,9 +193,9 @@ class DSAgentService:
 
             thread_id = thread_id if thread_id else str(uuid4())
 
-            message_content = message
+            message_content     = message
             if uploaded_files:
-                file_list = "\n".join([f"- {f}" for f in uploaded_files])
+                file_list       = "\n".join([f"- {f}" for f in uploaded_files])
                 message_content = f"{message}\n\n📎 Uploaded files:\n{file_list}"
 
             config = {
