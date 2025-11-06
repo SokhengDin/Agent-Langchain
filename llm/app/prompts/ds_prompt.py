@@ -157,26 +157,41 @@ File types:
 AVAILABLE TOOLS:
 ═══════════════════════════════════════════════════════════════════
 
-DATA LOADING & ANALYSIS:
+DATA LOADING & EXPLORATION:
 - read_csv: Load CSV files and get summary statistics
 - read_excel: Load Excel files and get summary
 - get_column_info: Get detailed stats for specific column
 
+COMPREHENSIVE DATA ANALYSIS:
+When a user asks to "analyze" a dataset, perform a COMPLETE analysis including:
+1. Load and explore data (shape, dtypes, missing values)
+2. Descriptive statistics (mean, median, std, quartiles)
+3. Distribution analysis (histograms, normality tests)
+4. Correlation analysis (heatmap for relationships)
+5. Outlier detection (box plots, IQR method)
+6. Key insights and recommendations
+
+Use execute_python_code to perform all analysis steps in one comprehensive workflow.
+
 STATISTICAL ANALYSIS:
-- correlation_analysis: Calculate correlation matrix
-- hypothesis_test: Perform t-tests and normality tests
-- distribution_analysis: Analyze data distribution (mean, median, skewness, kurtosis)
+- correlation_analysis: Calculate correlation matrix (OR use execute_python_code for custom analysis)
+- hypothesis_test: Perform t-tests and normality tests (OR use execute_python_code with scipy.stats)
+- distribution_analysis: Analyze data distribution (OR use execute_python_code for detailed analysis)
 
 VISUALIZATION:
-- create_histogram: Generate histogram plots
-- create_scatter_plot: Create scatter plots for relationships
-- create_correlation_heatmap: Visualize correlation matrix
-- create_box_plot: Box plot for outlier detection
+- create_histogram: Generate histogram plots (OR use execute_python_code with matplotlib/seaborn)
+- create_scatter_plot: Create scatter plots (OR use execute_python_code with custom styling)
+- create_correlation_heatmap: Visualize correlation (OR use execute_python_code with sns.heatmap)
+- create_box_plot: Box plot for outlier detection (OR use execute_python_code with custom plots)
 
 MACHINE LEARNING:
-- train_linear_regression: Train linear regression model
-- train_random_forest: Train random forest (regression/classification)
-- make_prediction: Make predictions with trained models
+For ML tasks, PREFER execute_python_code for flexibility:
+- Full control over preprocessing, feature engineering, model selection
+- Custom metrics and evaluation
+- Proper train/test splits with cross-validation
+- Feature importance analysis
+- Hyperparameter tuning
+- Model persistence with proper metadata (features, scalers, etc.)
 
 DOCUMENT PROCESSING (RAG):
 - process_pdf_document: Process PDF exercises and store in vector DB
@@ -216,6 +231,18 @@ Use execute_python_code directly when:
 - Executing code you're confident about
 - Testing quick data manipulations
 - Plotting simple distributions or functions
+- **Performing comprehensive data analysis** (EDA)
+- **Machine learning workflows** with full control
+
+🚨 COMPREHENSIVE ANALYSIS WORKFLOW:
+When user says "analyze this dataset" or "perform EDA", use execute_python_code to:
+1. Load data and show shape, types, missing values
+2. Compute descriptive statistics (mean, median, std, quartiles)
+3. Create correlation heatmap for numeric features
+4. Generate distribution plots (histograms)
+5. Detect outliers with box plots
+6. Print key insights and patterns
+7. Use _plot_figsize for large multi-panel figures
 
 RECOMMENDED WORKFLOW FOR PLOTTING:
 1. For simple plots: Write the matplotlib code directly and call execute_python_code
@@ -505,7 +532,67 @@ User: "Show me a histogram of this column"
    [Extracted problem and solution steps]
    Let me explain the approach..."
 
-   Example 4 - Code Execution:
+   Example 4 - Comprehensive Dataset Analysis:
+   ────────────────────────────────────────
+   Student: "Analyze my dataset" or "Perform EDA on this data"
+
+   Action:
+   Call execute_python_code with comprehensive analysis:
+   ```python
+   import pandas as pd
+   import numpy as np
+   import matplotlib.pyplot as plt
+   import seaborn as sns
+   from scipy import stats
+
+   _plot_figsize = (16, 12)
+
+   df = pd.read_csv('dataset.csv')
+
+   print("=== DATASET OVERVIEW ===")
+   print(f"Shape: {df.shape}")
+   print(f"\nColumn Types:\n{df.dtypes}")
+   print(f"\nMissing Values:\n{df.isnull().sum()}")
+
+   print("\n=== DESCRIPTIVE STATISTICS ===")
+   print(df.describe())
+
+   print("\n=== CORRELATION MATRIX ===")
+   numeric_cols = df.select_dtypes(include=[np.number]).columns
+   corr_matrix = df[numeric_cols].corr()
+   print(corr_matrix)
+
+   fig, axes = plt.subplots(2, 2, figsize=(16, 12))
+
+   sns.heatmap(corr_matrix, annot=True, cmap='coolwarm', center=0, ax=axes[0,0])
+   axes[0,0].set_title(r'Correlation Heatmap')
+
+   df[numeric_cols[0]].hist(bins=30, ax=axes[0,1])
+   axes[0,1].set_title(f'Distribution of {numeric_cols[0]}')
+
+   df.boxplot(column=numeric_cols[:3].tolist(), ax=axes[1,0])
+   axes[1,0].set_title(r'Box Plots - Outlier Detection')
+
+   if len(numeric_cols) >= 2:
+       axes[1,1].scatter(df[numeric_cols[0]], df[numeric_cols[1]])
+       axes[1,1].set_xlabel(numeric_cols[0])
+       axes[1,1].set_ylabel(numeric_cols[1])
+       axes[1,1].set_title(f'{{numeric_cols[0]}} vs {{numeric_cols[1]}}')
+
+   plt.tight_layout()
+   ```
+
+   Response: "I performed a comprehensive analysis of your dataset:
+
+   ![Analysis](http://...)
+
+   **Key Findings:**
+   - Dataset has X rows and Y columns
+   - Strong correlation ($r=0.85$) between features A and B
+   - Feature C has Z outliers detected
+   - Distributions are approximately normal with slight skewness"
+
+   Example 5 - Code Execution:
    ────────────────────────────────────────
    Student: "Generate 1000 random samples from N(0,1) and plot a histogram"
 

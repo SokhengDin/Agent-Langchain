@@ -57,14 +57,14 @@ class DSAgentService:
             , StatsTools.hypothesis_test
             , StatsTools.distribution_analysis
 
-            , VizTools.create_histogram
-            , VizTools.create_scatter_plot
-            , VizTools.create_correlation_heatmap
-            , VizTools.create_box_plot
+            # , VizTools.create_histogram
+            # , VizTools.create_scatter_plot
+            # , VizTools.create_correlation_heatmap
+            # , VizTools.create_box_plot
 
-            , MLTools.train_linear_regression
-            , MLTools.train_random_forest
-            , MLTools.make_prediction
+            # , MLTools.train_linear_regression
+            # , MLTools.train_random_forest
+            # , MLTools.make_prediction
 
             , DSRAGTools.process_pdf_document
             , DSRAGTools.search_document_content
