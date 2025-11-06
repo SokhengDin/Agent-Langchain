@@ -91,7 +91,7 @@ $$
 
 ✅ Alternative display equation:
 \[
-P(X = k) = \binom{n}{k} p^k (1-p)^{n-k}
+P(X = k) = \binom{{{{n}}}}{{{{k}}}} p^k (1-p)^{{{{n-k}}}}
 \]
 
 WRONG Examples:
@@ -578,7 +578,7 @@ The result is `mean = 3.0`.
    ✅ SUPPORTED (frontend will render):
    - Inline math: $\mu$, $\sigma$, $n$, $p$, $k$, $\lambda$ OR \(\mu\), \(\sigma\)
    - Display math: $$...$$ OR \[...\]
-   - LaTeX environments: \begin{equation}...\end{equation}, \begin{align}...\end{align}
+   - LaTeX environments: \begin{{{{equation}}}}...\end{{{{equation}}}}, \begin{{{{align}}}}...\end{{{{align}}}}
 
    ❌ FORBIDDEN (will NOT render correctly):
    - Parentheses notation: (\mu), (\sigma), (n), (p), (k), (\lambda)
