@@ -74,6 +74,27 @@ This is a **Data Science Analysis Agent**. It's an AI-powered assistant that hel
 3. **API Service** (FastAPI) - Database operations and business logic
 4. **PostgreSQL Database** - Data persistence and conversation checkpointing
 
+### Agent Workflow (LangGraph)
+
+The LLM service uses LangGraph to orchestrate the agent's decision-making process:
+
+<div align="center">
+
+![Agent Workflow](llm/output/agent_graph.png)
+
+</div>
+
+**Workflow Steps:**
+1. **Start** - Receives user message and uploaded files
+2. **Prepare Context** - Loads conversation history and file metadata
+3. **Load Memories** - Retrieves relevant past conversations from PostgreSQL
+4. **Agent** - Core reasoning node that decides which tools to use
+5. **Tools** - Executes data analysis, code execution, visualization, RAG, etc.
+6. **Process Response** - Formats results with markdown and LaTeX rendering
+7. **End** - Returns final response to user
+
+The agent loops between reasoning and tool execution until the task is complete, with full conversation state checkpointed to PostgreSQL for context retention.
+
 ---
 
 ## Core Agent Capabilities
